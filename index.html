@@ -696,7 +696,7 @@ function _doGenerateCalendar(){
   const managerDays=parseInt(document.getElementById('manager-days').value)||0;
   const specials=state.specialEvents[key]||[];
   const blockedMap={}; MEMBERS.forEach(m=>blockedMap[m]=new Set());
-  state.submissions.filter(s=>s.key===key).forEach(s=>s.dates.forEach(d=>blockedMap[s.member].add(d)));
+  state.submissions.filter(s=>s.key===key).forEach(s=>s.dates.forEach(d=>blockedMap[s.member].add(Number(d))));
   const holidayDays=new Set(specials.filter(e=>e.type==='holiday').map(e=>e.day));
 
   function dow(d){return new Date(y,mo,d).getDay();}
