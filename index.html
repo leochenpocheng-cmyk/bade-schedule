@@ -176,7 +176,7 @@ nav{background:rgba(255,255,255,.94);backdrop-filter:blur(12px);-webkit-backdrop
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="showPage('submit',this)">無法值班登記</button>
     <button class="nav-tab" onclick="showPage('admin',this)">管理員</button>
-    <button class="nav-tab" id="tab-schedule" onclick="showPage('schedule',this)">班表</button>
+    <button class="nav-tab" id="tab-schedule" onclick="showPage('schedule',this);onShowSchedulePage()">班表</button>
   </div>
 </nav>
 <div class="toast" id="toast"></div>
@@ -356,7 +356,7 @@ const TW_HOLIDAYS_2026={
 };
 function getTWHolidays(y,mo){return y===2026?(TW_HOLIDAYS_2026[`${y}-${mo}`]||[]):[]; }
 
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbwRugMTppWK6TOxr8dQf7x5qo2XfEJkaK1ExMeO7hD_sNj4SBTBmGHkMx6XhlCGq5wH/exec';
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbwE2O4eiJpy02T-LFkgnV5_FVad803LZdeLfsjPebAzXqk82FCMjQcydl3bfqz4hVgn/exec';
 const MONTHS=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
 let state={submissions:[],specialEvents:{}};
 let selectedMember=null;
@@ -515,6 +515,20 @@ function showPage(id,el){
 function showPageById(id){
   const tabs=document.querySelectorAll('.nav-tab');
   for(const t of tabs){ if(t.getAttribute('onclick')&&t.getAttribute('onclick').includes("'"+id+"'")){ showPage(id,t); return; } }
+}
+
+function onShowSchedulePage(){
+  // If no calState, try loading from Sheets
+  if(!window._calState){
+    const[y,mo]=parseMonthVal(document.getElementById('admin-month').value);
+    loadSpecialEventsAndSchedule(y,mo);
+  }
+}
+
+async function loadSpecialEventsAndSchedule(y,mo){
+  await loadFromSheets(y+'-'+(mo+1));
+  renderSpecialEvents();
+  await loadScheduleFromSheets(y,mo);
 }
 
 function parseMonthVal(v){const[y,mo]=v.split('-').map(Number);return[y,mo];}
@@ -766,6 +780,8 @@ function _doGenerateCalendar(){
 
   renderCalGrid();
   renderCalStats();
+  // Save schedule to Sheets
+  saveScheduleToSheets(window._calState);
   // Switch to schedule tab
   setTimeout(()=>showPageById('schedule'), 80);
 }
@@ -897,6 +913,63 @@ function applyEdit(day, newMember){
 function closeEditPopup(){
   const w=document.getElementById('edit-modal-wrap');
   if(w) w.style.display='none';
+}
+
+function saveScheduleToSheets(cs){
+  if(!cs) return;
+  try{
+    // Convert assigned keys to numbers, exclude Set objects
+    const assignedClean={};
+    Object.entries(cs.assigned).forEach(([d,m])=>{ assignedClean[d]=m; });
+    const scheduleData=JSON.stringify({
+      assigned: assignedClean,
+      y: cs.y,
+      mo: cs.mo,
+      managerName: cs.managerName,
+      managerDays: cs.managerDays
+    });
+    const payload={
+      action:'write',
+      member:'__schedule__',
+      key:cs.y+'-'+(cs.mo+1),
+      dates:[],
+      scheduleData: scheduleData
+    };
+    sheetPost(payload).catch(e=>console.error('saveSchedule error',e));
+  }catch(e){ console.error('saveScheduleToSheets error',e); }
+}
+
+async function loadScheduleFromSheets(y, mo){
+  try{
+    const key=y+'-'+(mo+1);
+    const url=SCRIPT_URL+'?action=readSchedule&key='+encodeURIComponent(key);
+    const data=await jsonpFetch(url);
+    if(data && data.scheduleData){
+      const sd=JSON.parse(data.scheduleData);
+      window._calState={
+        y: sd.y, mo: sd.mo,
+        totalDays: daysInMonth(sd.y, sd.mo),
+        firstDow: new Date(sd.y, sd.mo, 1).getDay(),
+        holidayDays: new Set((state.specialEvents[key]||[]).filter(e=>e.type==='holiday').map(e=>e.day)),
+        specials: state.specialEvents[key]||[],
+        assigned: sd.assigned,
+        counts: {},
+        managerName: sd.managerName,
+        managerDays: sd.managerDays
+      };
+      MEMBERS.forEach(m=>window._calState.counts[m]=0);
+      Object.values(sd.assigned).forEach(m=>{if(m&&window._calState.counts[m]!==undefined) window._calState.counts[m]++;});
+      renderCalGrid();
+      renderCalStats();
+      // Show the saved notice
+      const out=document.getElementById('calendar-output');
+      const notice=document.createElement('div');
+      notice.className='alert alert-info no-print';
+      notice.style.cssText='display:flex;align-items:center;gap:10px;margin-bottom:1rem;';
+      notice.innerHTML='<span>📋</span><div>顯示上次產生的班表。如需更新請至「管理員」重新產生。</div>';
+      out.insertBefore(notice, out.firstChild);
+    }
+  }catch(e){ console.error('loadSchedule error',e); }
 }
 
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
