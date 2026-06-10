@@ -357,7 +357,7 @@ const TW_HOLIDAYS_2026={
 };
 function getTWHolidays(y,mo){return y===2026?(TW_HOLIDAYS_2026[`${y}-${mo}`]||[]):[]; }
 
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycby1lGISmw6D3d3_1oLd9NV2nUPjGeIHtdcd7iEVoPY0NAljg9VF74oxfVDll0zvFiDv/exec';
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbyMq4cARuY01xiyXU2kxVCIHa1-rFzZM1_DrM7bhmFf_qijZsBxrMH_3EQqZ7gzaDiX/exec';
 const MONTHS=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
 let state={submissions:[],specialEvents:{}};
 let selectedMember=null;
@@ -391,30 +391,32 @@ function jsonpFetch(url){
   });
 }
 
-// ── no-cors fetch for POST (write) ───────────────────────────────
-// Google Apps Script doPost reads e.parameter.data when sent as form
+// ── JSONP POST (write) — waits for confirmation ──────────────────
 function sheetPost(data){
-  return new Promise((resolve)=>{
-    const form=document.createElement('form');
-    form.method='POST';
-    form.action=SCRIPT_URL;
-    form.target='_gs_frame';
-    form.style.display='none';
-    const inp=document.createElement('input');
-    inp.type='hidden'; inp.name='data';
-    inp.value=JSON.stringify(data);
-    form.appendChild(inp);
-    let fr=document.getElementById('_gs_frame');
-    if(!fr){
-      fr=document.createElement('iframe');
-      fr.id='_gs_frame'; fr.name='_gs_frame';
-      fr.style.display='none';
-      document.body.appendChild(fr);
-    }
-    document.body.appendChild(form);
-    form.submit();
-    document.body.removeChild(form);
-    setTimeout(()=>resolve({ok:true}),1000);
+  return new Promise((resolve,reject)=>{
+    const cb='_cb'+Date.now()+Math.floor(Math.random()*9999);
+    const script=document.createElement('script');
+    // Send data as GET parameter with action=write
+    const url=SCRIPT_URL+'?action=write&data='+encodeURIComponent(JSON.stringify(data))+'&callback='+cb;
+    script.src=url;
+    const timer=setTimeout(()=>{
+      delete window[cb];
+      if(script.parentNode) document.head.removeChild(script);
+      reject(new Error('timeout'));
+    },10000);
+    window[cb]=(res)=>{
+      clearTimeout(timer);
+      delete window[cb];
+      if(script.parentNode) document.head.removeChild(script);
+      resolve(res);
+    };
+    script.onerror=()=>{
+      clearTimeout(timer);
+      delete window[cb];
+      if(script.parentNode) document.head.removeChild(script);
+      reject(new Error('script error'));
+    };
+    document.head.appendChild(script);
   });
 }
 
