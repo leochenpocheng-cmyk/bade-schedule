@@ -501,9 +501,11 @@ function init(){
   }, 30000);
   renderDateGrid(); renderSpecialEvents();
   // Load this month's submissions from Sheets on startup
-  const initKey=document.getElementById('submit-month').value.replace('-','-');
   const [iy,imo]=parseMonthVal(document.getElementById('submit-month').value);
   loadFromSheets(`${iy}-${imo+1}`).then(()=>renderSubmittedList());
+  // Auto-load schedule on startup
+  const [ay,amo]=parseMonthVal(document.getElementById('admin-month').value);
+  loadScheduleFromSheets(ay, amo);
 }
 
 function showPage(id,el){
