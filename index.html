@@ -483,13 +483,13 @@ function init(){
   // Auto-refresh every 30 seconds
   setInterval(()=>{
     const[y,mo]=parseMonthVal(document.getElementById('submit-month').value);
-    loadFromSheets(`${y}-${mo}`).then(()=>renderSubmittedList());
+    loadFromSheets(`${y}-${mo+1}`).then(()=>renderSubmittedList());
   }, 30000);
   renderDateGrid(); renderSpecialEvents();
   // Load this month's submissions from Sheets on startup
   const initKey=document.getElementById('submit-month').value.replace('-','-');
   const [iy,imo]=parseMonthVal(document.getElementById('submit-month').value);
-  loadFromSheets(`${iy}-${imo}`).then(()=>renderSubmittedList());
+  loadFromSheets(`${iy}-${imo+1}`).then(()=>renderSubmittedList());
 }
 
 function showPage(id,el){
@@ -578,7 +578,7 @@ function refreshSubmissions(){
   const btn=document.getElementById('refresh-btn');
   if(btn){ btn.textContent='⏳ 同步中...'; btn.disabled=true; }
   const[y,mo]=parseMonthVal(document.getElementById('submit-month').value);
-  loadFromSheets(`${y}-${mo}`).then(()=>{
+  loadFromSheets(`${y}-${mo+1}`).then(()=>{
     renderSubmittedList();
     if(btn){ btn.innerHTML='✅ 已同步'; btn.disabled=false; setTimeout(()=>{btn.innerHTML='🔄 同步最新';},2000); }
   });
@@ -587,13 +587,13 @@ function refreshSubmissions(){
 function onSubmitMonthChange(){
   selectedDates=new Set();
   const[y,mo]=parseMonthVal(document.getElementById('submit-month').value);
-  loadFromSheets(`${y}-${mo}`).then(()=>{renderDateGrid();renderSubmittedList();});
+  loadFromSheets(`${y}-${mo+1}`).then(()=>{renderDateGrid();renderSubmittedList();});
 }
 
 function submitAvailability(){
   if(!selectedMember){toast('⚠️ 請先選擇成員');return;}
   const[y,mo]=parseMonthVal(document.getElementById('submit-month').value);
-  const key=`${y}-${mo}`;
+  const key=`${y}-${mo+1}`;
   const dates=[...selectedDates].sort((a,b)=>a-b);
   const submission={member:selectedMember,key,year:y,month:mo,dates,updatedAt:new Date().toISOString()};
   state.submissions=state.submissions.filter(s=>!(s.member===selectedMember&&s.key===key));
@@ -610,7 +610,7 @@ function submitAvailability(){
 function renderSubmittedList(){
   const wrap=document.getElementById('submitted-list-wrap');
   const[y,mo]=parseMonthVal(document.getElementById('submit-month').value);
-  const key=`${y}-${mo}`;
+  const key=`${y}-${mo+1}`;
   const subs=state.submissions.filter(s=>s.key===key);
   wrap.innerHTML='';
   if(!subs.length){wrap.innerHTML='<div class="empty-state" style="font-size:14px;text-align:center;padding:2rem;color:var(--ink-light)">尚無人登錄本月資料</div>';return;}
@@ -667,7 +667,7 @@ document.getElementById('admin-month').addEventListener('change',renderSpecialEv
 
 function generateCalendar(){
   const[py,pmo]=parseMonthVal(document.getElementById('admin-month').value);
-  loadFromSheets(`${py}-${pmo}`).then(()=>_doGenerateCalendar());
+  loadFromSheets(`${py}-${pmo+1}`).then(()=>_doGenerateCalendar());
 }
 function _doGenerateCalendar(){
   const[y,mo]=parseMonthVal(document.getElementById('admin-month').value);
