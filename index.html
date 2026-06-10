@@ -423,7 +423,7 @@ function sheetPost(data){
 async function loadFromSheets(key){
   try{
     showLoading(true);
-    const url=SCRIPT_URL+'?key='+encodeURIComponent(key);
+    const url=SCRIPT_URL+'?action=read&key='+encodeURIComponent(key);
     const data=await jsonpFetch(url);
     state.submissions=state.submissions.filter(s=>s.key!==key);
     if(Array.isArray(data)) data.forEach(s=>state.submissions.push(s));
