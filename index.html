@@ -503,9 +503,11 @@ function init(){
   // Load this month's submissions from Sheets on startup
   const [iy,imo]=parseMonthVal(document.getElementById('submit-month').value);
   loadFromSheets(`${iy}-${imo+1}`).then(()=>renderSubmittedList());
-  // Auto-load schedule on startup
-  const [ay,amo]=parseMonthVal(document.getElementById('admin-month').value);
-  loadScheduleFromSheets(ay, amo);
+  // Auto-load schedule on startup (delay to ensure DOM is ready)
+  setTimeout(()=>{
+    const [ay,amo]=parseMonthVal(document.getElementById('admin-month').value);
+    loadScheduleFromSheets(ay, amo);
+  }, 300);
 }
 
 function showPage(id,el){
@@ -973,12 +975,13 @@ async function loadScheduleFromSheets(y, mo){
   if(scheduleData){
     try{
       const sd=JSON.parse(scheduleData);
+      const specKey=sd.y+'-'+(sd.mo+1);
       window._calState={
         y: sd.y, mo: sd.mo,
         totalDays: daysInMonth(sd.y, sd.mo),
         firstDow: new Date(sd.y, sd.mo, 1).getDay(),
-        holidayDays: new Set((state.specialEvents[key]||[]).filter(e=>e.type==='holiday').map(e=>e.day)),
-        specials: state.specialEvents[key]||[],
+        holidayDays: new Set((state.specialEvents[specKey]||[]).filter(e=>e.type==='holiday').map(e=>e.day)),
+        specials: state.specialEvents[specKey]||[],
         assigned: sd.assigned,
         counts: {},
         managerName: sd.managerName,
@@ -986,15 +989,21 @@ async function loadScheduleFromSheets(y, mo){
       };
       MEMBERS.forEach(m=>window._calState.counts[m]=0);
       Object.values(sd.assigned).forEach(m=>{if(m&&window._calState.counts[m]!==undefined) window._calState.counts[m]++;});
-      renderCalGrid();
-      renderCalStats();
-      const out=document.getElementById('calendar-output');
-      const notice=document.createElement('div');
-      notice.className='alert alert-info no-print';
-      notice.style.cssText='display:flex;align-items:center;gap:10px;margin-bottom:1rem;';
-      notice.innerHTML='<span>📋</span><div>顯示上次產生的班表。如需更新請至「管理員」重新產生。</div>';
-      if(out.firstChild) out.insertBefore(notice, out.firstChild);
-      else out.appendChild(notice);
+      // Switch to schedule page and render
+      showPageById('schedule');
+      setTimeout(()=>{
+        renderCalGrid();
+        renderCalStats();
+        const out=document.getElementById('calendar-output');
+        if(out){
+          const notice=document.createElement('div');
+          notice.className='alert alert-info no-print';
+          notice.style.cssText='display:flex;align-items:center;gap:10px;margin-bottom:1rem;';
+          notice.innerHTML='<span>📋</span><div>顯示上次產生的班表。如需更新請至「管理員」重新產生。</div>';
+          if(out.firstChild) out.insertBefore(notice, out.firstChild);
+          else out.appendChild(notice);
+        }
+      }, 100);
     }catch(e){ console.error('parseSchedule error',e); }
   }
 }
