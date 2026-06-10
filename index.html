@@ -515,7 +515,7 @@ function selectMember(m){
   renderDateGrid();
 }
 function getExistingBlocked(member,year,month){
-  const key=`${year}-${month}`;
+  const key=`${year}-${month+1}`;
   const s=state.submissions.find(s=>s.member===member&&s.key===key);
   return new Set(s?s.dates:[]);
 }
@@ -633,7 +633,7 @@ function renderSubmittedList(){
 
 function renderSpecialEvents(){
   const[y,mo]=parseMonthVal(document.getElementById('admin-month').value);
-  const key=`${y}-${mo}`;
+  const key=`${y}-${mo+1}`;
   if(!state.specialEvents[key]) state.specialEvents[key]=[];
   if(!state.specialEvents[key].some(e=>e.type==='weekly')){
     for(let d=1;d<=daysInMonth(y,mo);d++)
@@ -660,7 +660,7 @@ function renderSpecialEvents(){
     list.appendChild(row);
   });
 }
-function addSpecialEvent(){const[y,mo]=parseMonthVal(document.getElementById('admin-month').value);const key=`${y}-${mo}`;if(!state.specialEvents[key])state.specialEvents[key]=[];state.specialEvents[key].push({day:1,name:'',type:'holiday'});saveSpecialEvents();renderSpecialEvents();}
+function addSpecialEvent(){const[y,mo]=parseMonthVal(document.getElementById('admin-month').value);const key=`${y}-${mo+1}`;if(!state.specialEvents[key])state.specialEvents[key]=[];state.specialEvents[key].push({day:1,name:'',type:'holiday'});saveSpecialEvents();renderSpecialEvents();}
 function updateSpecial(key,i,field,val){if(!state.specialEvents[key])return;state.specialEvents[key][i][field]=field==='day'?parseInt(val):val;saveSpecialEvents();}
 function removeSpecial(key,i){state.specialEvents[key].splice(i,1);saveSpecialEvents();renderSpecialEvents();}
 document.getElementById('admin-month').addEventListener('change',renderSpecialEvents);
@@ -672,7 +672,7 @@ function generateCalendar(){
 function _doGenerateCalendar(){
   const[y,mo]=parseMonthVal(document.getElementById('admin-month').value);
   const totalDays=daysInMonth(y,mo);
-  const key=`${y}-${mo}`;
+  const key=`${y}-${mo+1}`;
   const managerName='Josh';
   const managerDays=parseInt(document.getElementById('manager-days').value)||0;
   const specials=state.specialEvents[key]||[];
