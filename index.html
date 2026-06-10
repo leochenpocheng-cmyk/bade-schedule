@@ -425,10 +425,25 @@ async function loadFromSheets(key){
     showLoading(true);
     const url=SCRIPT_URL+'?action=read&key='+encodeURIComponent(key);
     const data=await jsonpFetch(url);
-    state.submissions=state.submissions.filter(s=>s.key!==key);
-    if(Array.isArray(data)) data.forEach(s=>state.submissions.push(s));
+    if(Array.isArray(data)){
+      state.submissions=state.submissions.filter(s=>s.key!==key);
+      data.forEach(s=>{
+        // Normalise key format from Sheets
+        state.submissions.push({
+          member: s.member,
+          key: s.key,
+          dates: Array.isArray(s.dates)?s.dates.map(Number):[],
+          year: parseInt(s.key.split('-')[0]),
+          month: parseInt(s.key.split('-')[1])-1
+        });
+      });
+    }
     showLoading(false);
-  }catch(e){console.error('loadFromSheets error',e);showLoading(false);}
+  }catch(e){
+    console.error('loadFromSheets error',e);
+    showLoading(false);
+    toast('⚠️ 同步失敗，請再試一次');
+  }
 }
 
 async function saveToSheets(submission){
