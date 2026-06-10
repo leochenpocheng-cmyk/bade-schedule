@@ -635,16 +635,20 @@ function renderSpecialEvents(){
   const[y,mo]=parseMonthVal(document.getElementById('admin-month').value);
   const key=`${y}-${mo+1}`;
   if(!state.specialEvents[key]) state.specialEvents[key]=[];
+  let changed=false;
   if(!state.specialEvents[key].some(e=>e.type==='weekly')){
     for(let d=1;d<=daysInMonth(y,mo);d++)
       if(getDow(y,mo,d)===3) state.specialEvents[key].push({day:d,name:'Weekly Meeting',type:'weekly'});
+    changed=true;
   }
   const twH=getTWHolidays(y,mo);
   twH.forEach(h=>{
-    if(!state.specialEvents[key].some(e=>e.day===h.day&&e.type==='holiday'))
+    if(!state.specialEvents[key].some(e=>e.day===h.day&&e.type==='holiday')){
       state.specialEvents[key].push({day:h.day,name:h.name,type:'holiday'});
+      changed=true;
+    }
   });
-  saveSpecialEvents();
+  if(changed) saveSpecialEvents();
   const list=document.getElementById('special-list'); list.innerHTML='';
   state.specialEvents[key].forEach((ev,i)=>{
     const isTWHol=twH.some(h=>h.day===ev.day&&h.name===ev.name&&ev.type==='holiday');
