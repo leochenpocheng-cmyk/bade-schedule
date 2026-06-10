@@ -522,8 +522,21 @@ function showPageById(id){
 }
 
 function onShowSchedulePage(){
-  // If no calState, try loading from Sheets
-  if(!window._calState){
+  if(window._calState){
+    // Already loaded, just render
+    renderCalGrid();
+    renderCalStats();
+    const out=document.getElementById('calendar-output');
+    if(out && !out.querySelector('.alert')){
+      const notice=document.createElement('div');
+      notice.className='alert alert-info no-print';
+      notice.style.cssText='display:flex;align-items:center;gap:10px;margin-bottom:1rem;';
+      notice.innerHTML='<span>📋</span><div>顯示上次產生的班表。如需更新請至「管理員」重新產生。</div>';
+      if(out.firstChild) out.insertBefore(notice, out.firstChild);
+      else out.appendChild(notice);
+    }
+  } else {
+    // Try loading from Sheets/localStorage
     const[y,mo]=parseMonthVal(document.getElementById('admin-month').value);
     loadSpecialEventsAndSchedule(y,mo);
   }
@@ -989,21 +1002,8 @@ async function loadScheduleFromSheets(y, mo){
       };
       MEMBERS.forEach(m=>window._calState.counts[m]=0);
       Object.values(sd.assigned).forEach(m=>{if(m&&window._calState.counts[m]!==undefined) window._calState.counts[m]++;});
-      // Switch to schedule page and render
-      showPageById('schedule');
-      setTimeout(()=>{
-        renderCalGrid();
-        renderCalStats();
-        const out=document.getElementById('calendar-output');
-        if(out){
-          const notice=document.createElement('div');
-          notice.className='alert alert-info no-print';
-          notice.style.cssText='display:flex;align-items:center;gap:10px;margin-bottom:1rem;';
-          notice.innerHTML='<span>📋</span><div>顯示上次產生的班表。如需更新請至「管理員」重新產生。</div>';
-          if(out.firstChild) out.insertBefore(notice, out.firstChild);
-          else out.appendChild(notice);
-        }
-      }, 100);
+      // Just store _calState, render when user visits schedule tab
+      console.log('Schedule loaded into _calState, ready to render');
     }catch(e){ console.error('parseSchedule error',e); }
   }
 }
