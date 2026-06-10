@@ -918,7 +918,6 @@ function closeEditPopup(){
 function saveScheduleToSheets(cs){
   if(!cs) return;
   try{
-    // Convert assigned keys to numbers, exclude Set objects
     const assignedClean={};
     Object.entries(cs.assigned).forEach(([d,m])=>{ assignedClean[d]=m; });
     const scheduleData=JSON.stringify({
@@ -928,24 +927,50 @@ function saveScheduleToSheets(cs){
       managerName: cs.managerName,
       managerDays: cs.managerDays
     });
-    const payload={
-      action:'write',
-      member:'__schedule__',
-      key:cs.y+'-'+(cs.mo+1),
-      dates:[],
-      scheduleData: scheduleData
-    };
-    sheetPost(payload).catch(e=>console.error('saveSchedule error',e));
+    const key=cs.y+'-'+(cs.mo+1);
+    // 1. 存到 localStorage（立即生效）
+    localStorage.setItem('schedule_'+key, scheduleData);
+    console.log('Saved to localStorage, key:', key);
+    // 2. 嘗試存到 Sheets（背景執行，資料壓縮後傳送）
+    const compressed=btoa(unescape(encodeURIComponent(scheduleData)));
+    const payload={action:'write',member:'__schedule__',key:key,dates:[],scheduleData:compressed};
+    sheetPost(payload)
+      .then(r=>console.log('Saved to Sheets OK',r))
+      .catch(e=>console.error('saveSchedule Sheets error',e));
   }catch(e){ console.error('saveScheduleToSheets error',e); }
 }
 
 async function loadScheduleFromSheets(y, mo){
-  try{
-    const key=y+'-'+(mo+1);
-    const url=SCRIPT_URL+'?action=readSchedule&key='+encodeURIComponent(key);
-    const data=await jsonpFetch(url);
-    if(data && data.scheduleData){
-      const sd=JSON.parse(data.scheduleData);
+  const key=y+'-'+(mo+1);
+  let scheduleData=null;
+
+  // 1. 先嘗試從 localStorage 讀取
+  const local=localStorage.getItem('schedule_'+key);
+  if(local){
+    console.log('Loading schedule from localStorage, key:', key);
+    scheduleData=local;
+  } else {
+    // 2. 嘗試從 Sheets 讀取
+    try{
+      const url=SCRIPT_URL+'?action=readSchedule&key='+encodeURIComponent(key);
+      const data=await jsonpFetch(url);
+      if(data && data.scheduleData){
+        try{
+          // 嘗試解壓縮
+          scheduleData=decodeURIComponent(escape(atob(data.scheduleData)));
+        }catch(e){
+          scheduleData=data.scheduleData;
+        }
+        // 存到 localStorage
+        localStorage.setItem('schedule_'+key, scheduleData);
+        console.log('Loaded from Sheets and cached locally');
+      }
+    }catch(e){ console.error('loadSchedule Sheets error',e); }
+  }
+
+  if(scheduleData){
+    try{
+      const sd=JSON.parse(scheduleData);
       window._calState={
         y: sd.y, mo: sd.mo,
         totalDays: daysInMonth(sd.y, sd.mo),
@@ -961,15 +986,15 @@ async function loadScheduleFromSheets(y, mo){
       Object.values(sd.assigned).forEach(m=>{if(m&&window._calState.counts[m]!==undefined) window._calState.counts[m]++;});
       renderCalGrid();
       renderCalStats();
-      // Show the saved notice
       const out=document.getElementById('calendar-output');
       const notice=document.createElement('div');
       notice.className='alert alert-info no-print';
       notice.style.cssText='display:flex;align-items:center;gap:10px;margin-bottom:1rem;';
       notice.innerHTML='<span>📋</span><div>顯示上次產生的班表。如需更新請至「管理員」重新產生。</div>';
-      out.insertBefore(notice, out.firstChild);
-    }
-  }catch(e){ console.error('loadSchedule error',e); }
+      if(out.firstChild) out.insertBefore(notice, out.firstChild);
+      else out.appendChild(notice);
+    }catch(e){ console.error('parseSchedule error',e); }
+  }
 }
 
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
