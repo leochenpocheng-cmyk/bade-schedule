@@ -454,8 +454,8 @@ function showLoading(on){
 }
 
 // Keep localStorage as cache for specialEvents only
-function saveSpecialEvents(){localStorage.setItem('specialEvents_v4',JSON.stringify(state.specialEvents));}
-function loadSpecialEvents(){try{return JSON.parse(localStorage.getItem('specialEvents_v4'))||{}}catch(e){return{}}}
+function saveSpecialEvents(){localStorage.setItem('specialEvents_v5',JSON.stringify(state.specialEvents));}
+function loadSpecialEvents(){localStorage.removeItem('specialEvents_v4');try{return JSON.parse(localStorage.getItem('specialEvents_v5'))||{}}catch(e){return{}}}
 
 function init(){
   const now=new Date();
