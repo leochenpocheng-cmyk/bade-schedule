@@ -201,8 +201,11 @@ nav{background:rgba(255,255,255,.94);backdrop-filter:blur(12px);border-bottom:1p
 <div class="page" id="page-schedule">
   <div class="hero" style="background:linear-gradient(135deg,#1a3a2a 0%,#2d6235 60%,#4a8c5c 100%);">
     <div class="hero-label">Schedule</div>
-    <div class="hero-title">當月班表</div>
-    <div class="hero-sub">由管理員產生後顯示於此。點擊人名可微調。</div>
+    <div class="hero-title">值班班表</div>
+    <div style="display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap;">
+      <select class="styled-select" id="schedule-month" onchange="onScheduleMonthChange()" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3);backdrop-filter:blur(4px);"></select>
+      <button onclick="onShowSchedulePage()" style="padding:9px 18px;border-radius:10px;border:1.5px solid rgba(255,255,255,.4);background:rgba(255,255,255,.15);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;">🔄 載入班表</button>
+    </div>
   </div>
   <div id="calendar-output">
     <div style="text-align:center;padding:4rem 2rem;color:var(--ink-light);">
@@ -442,12 +445,47 @@ function showPageById(id) {
   }
 }
 function onShowSchedulePage() {
-  if (window._calState) {
+  var smEl = document.getElementById('schedule-month');
+  var ym = smEl ? parseMonthVal(smEl.value) : parseMonthVal(document.getElementById('admin-month').value);
+  var key = ym[0] + '-' + (ym[1] + 1);
+  // Check if current _calState matches selected month
+  if (window._calState && window._calState.y === ym[0] && window._calState.mo === ym[1]) {
     renderCalendar();
   } else {
-    var ym = parseMonthVal(document.getElementById('admin-month').value);
+    // Load from localStorage or Sheets for selected month
+    var local = loadScheduleLocal(key);
+    if (local) {
+      applySchedule(local);
+      renderCalendar();
+    } else {
+      document.getElementById('calendar-output').innerHTML = '<div style="text-align:center;padding:3rem 2rem;color:var(--ink-light);"><div style="font-size:36px;margin-bottom:1rem;">⏳</div><div style="font-size:14px;">載入中...</div></div>';
+      loadSchedule(ym[0], ym[1]).then(function() {
+        if (window._calState && window._calState.y === ym[0] && window._calState.mo === ym[1]) {
+          renderCalendar();
+        } else {
+          document.getElementById('calendar-output').innerHTML = '<div style="text-align:center;padding:3rem 2rem;color:var(--ink-light);"><div style="font-size:36px;margin-bottom:1rem;">📋</div><div style="font-size:14px;font-weight:500;margin-bottom:8px;">尚無此月份班表</div><div style="font-size:12px;">請先至「管理員」頁面產生班表</div></div>';
+        }
+      });
+    }
+  }
+}
+
+function onScheduleMonthChange() {
+  var smEl = document.getElementById('schedule-month');
+  var ym = parseMonthVal(smEl.value);
+  var key = ym[0] + '-' + (ym[1] + 1);
+  var local = loadScheduleLocal(key);
+  if (local) {
+    applySchedule(local);
+    renderCalendar();
+  } else {
+    document.getElementById('calendar-output').innerHTML = '<div style="text-align:center;padding:3rem 2rem;color:var(--ink-light);"><div style="font-size:36px;margin-bottom:1rem;">⏳</div><div style="font-size:14px;">載入中...</div></div>';
     loadSchedule(ym[0], ym[1]).then(function() {
-      if (window._calState) renderCalendar();
+      if (window._calState && window._calState.y === ym[0] && window._calState.mo === ym[1]) {
+        renderCalendar();
+      } else {
+        document.getElementById('calendar-output').innerHTML = '<div style="text-align:center;padding:3rem 2rem;color:var(--ink-light);"><div style="font-size:36px;margin-bottom:1rem;">📋</div><div style="font-size:14px;font-weight:500;margin-bottom:8px;">尚無此月份班表</div><div style="font-size:12px;">請先至「管理員」頁面產生班表</div></div>';
+      }
     });
   }
 }
@@ -491,6 +529,18 @@ function init() {
 
   var aym = parseMonthVal(document.getElementById('admin-month').value);
   loadSchedule(aym[0], aym[1]);
+
+  // Populate schedule month selector
+  var smt = document.getElementById('schedule-month');
+  var now2 = new Date();
+  for (var si = -1; si < 12; si++) {
+    var sd2 = new Date(now2.getFullYear(), now2.getMonth() + si, 1);
+    var so = document.createElement('option');
+    so.value = sd2.getFullYear() + '-' + sd2.getMonth();
+    so.textContent = sd2.getFullYear() + ' 年 ' + MONTHS[sd2.getMonth()];
+    if (si === 0) so.selected = true;
+    smt.appendChild(so);
+  }
 
   setInterval(function() {
     var ym2 = parseMonthVal(document.getElementById('submit-month').value);
