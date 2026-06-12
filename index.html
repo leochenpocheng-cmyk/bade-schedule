@@ -411,6 +411,8 @@ function buildHolidaySet(y, mo, key) {
   (state.specialEvents[key] || []).forEach(function(e) {
     if (e.type === 'holiday') hols.add(e.day);
   });
+  // Always include TW public holidays
+  getTWHolidays(y, mo).forEach(function(h) { hols.add(h.day); });
   return hols;
 }
 
@@ -752,7 +754,10 @@ function generateCalendar() {
       s.dates.forEach(function(d) { blockedMap[s.member][Number(d)] = true; });
     });
     var holidayDays = {};
+    // From special events (stored)
     specials.forEach(function(e) { if (e.type === 'holiday') holidayDays[e.day] = true; });
+    // Always include TW public holidays regardless of localStorage
+    getTWHolidays(y, mo).forEach(function(h) { holidayDays[h.day] = true; });
 
     function dow(d) { return new Date(y, mo, d).getDay(); }
     var tueThu = [], monFri = [];
