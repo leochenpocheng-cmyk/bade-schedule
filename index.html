@@ -131,12 +131,13 @@ nav{background:rgba(255,255,255,.94);backdrop-filter:blur(12px);-webkit-backdrop
   .cal-stat-name{font-size:9px;}
   .cal-stat-count{font-size:16px;}
   .cal-stats-wrap{padding:0.75rem 1rem;}
-  .cal-grid-wrap{padding:0 0.5rem 1rem;}
-  .cal-grid-hdr div{font-size:9px;padding:8px 0;}
-  .cal-grid{gap:2px;}
-  .cal-cell{min-height:52px;padding:3px 4px;border-radius:6px;}
-  .cal-day-num{font-size:10px;margin-bottom:1px;}
-  .cal-ev{font-size:9px;padding:1px 3px;border-radius:3px;}
+  .cal-grid-wrap{padding:0 0 1rem;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .cal-grid-hdr{min-width:560px;padding:8px 0.5rem;}
+  .cal-grid-hdr div{font-size:10px;}
+  .cal-grid{min-width:560px;gap:3px;padding:0 0.5rem;}
+  .cal-cell{min-height:64px;padding:4px 5px;border-radius:8px;}
+  .cal-day-num{font-size:11px;margin-bottom:2px;}
+  .cal-ev{font-size:10px;padding:2px 4px;border-radius:4px;}
 }
 </style>
 </head>
