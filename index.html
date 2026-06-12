@@ -77,10 +77,11 @@ nav{background:rgba(255,255,255,.94);backdrop-filter:blur(12px);-webkit-backdrop
 .cal-stat-name{font-size:10px;color:var(--ink-light);}
 .cal-stat-count{font-size:20px;font-weight:600;}
 .cal-grid-wrap{padding:0 1.5rem 1.5rem;}
-.cal-grid-hdr{display:grid;grid-template-columns:repeat(7,1fr);padding:12px 0 8px;}
+.cal-grid-hdr{display:grid;grid-template-columns:repeat(7,1fr);padding:12px 0 8px;min-width:480px;}
 .cal-grid-hdr div{text-align:center;font-size:10px;font-weight:600;color:var(--ink-light);text-transform:uppercase;}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;min-width:480px;}
 .cal-cell{min-height:82px;border-radius:10px;padding:6px 8px;background:var(--cream);}
+.cal-scroll-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
 .cal-cell.empty-cell,.cal-cell.weekend{background:transparent;}
 .cal-cell.wed-cell{background:var(--sage-light);}
 .cal-cell.wfh-cell{background:var(--wfh-bg);}
@@ -938,8 +939,8 @@ function renderCalendar() {
     + '<div class="cal-wrap">'
     + '<div class="cal-top"><div class="cal-month-title">' + y + ' 年 ' + MONTHS[mo] + '</div><div class="cal-legend">' + legendHtml + '</div></div>'
     + '<div class="cal-stats-wrap"><div class="cal-stats">' + statsHtml + '</div></div>'
-    + '<div class="cal-grid-wrap"><div class="cal-grid-hdr"><div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div></div>'
-    + '<div class="cal-grid">' + cells + '</div></div>'
+    + '<div class="cal-grid-wrap"><div class="cal-scroll-wrap"><div class="cal-grid-hdr"><div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div></div>'
+    + '<div class="cal-grid">' + cells + '</div></div></div></div>'
     + '<div class="cal-footer-bar"><span>週三 Weekly Meeting · 週一五可居家辦公</span><span>' + cs.managerName + ' 主管 ' + cs.managerDays + ' 天</span></div>'
     + '</div>';
 }
