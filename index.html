@@ -627,6 +627,7 @@ function renderSpecialEvents(){
     row.appendChild(typeSelect); row.appendChild(delBtn);
     list.appendChild(row);
   });
+}
 function addSpecialEvent(){const[y,mo]=parseMonthVal(document.getElementById('admin-month').value);const key=y+'-'+(mo+1);if(!state.specialEvents[key])state.specialEvents[key]=[];state.specialEvents[key].push({day:1,name:'',type:'holiday'});saveSpecialEvents();renderSpecialEvents();}
 function updateSpecial(key,i,field,val){if(!state.specialEvents[key])return;state.specialEvents[key][i][field]=field==='day'?parseInt(val):val;saveSpecialEvents();}
 function removeSpecial(key,i){state.specialEvents[key].splice(i,1);saveSpecialEvents();renderSpecialEvents();}
