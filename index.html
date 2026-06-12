@@ -805,9 +805,11 @@ function generateCalendar() {
       s.dates.forEach(function(d) { blockedMap[s.member][Number(d)] = true; });
     });
     var holidayDays = {};
-    // From special events (stored)
-    specials.forEach(function(e) { if (e.type === 'holiday') holidayDays[e.day] = true; });
-    // Always include TW public holidays regardless of localStorage
+    // From special events - exclude holidays AND training days from scheduling
+    specials.forEach(function(e) {
+      if (e.type === 'holiday' || e.type === 'training') holidayDays[e.day] = true;
+    });
+    // Always include TW public holidays
     getTWHolidays(y, mo).forEach(function(h) { holidayDays[h.day] = true; });
 
     function dow(d) { return new Date(y, mo, d).getDay(); }
