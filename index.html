@@ -203,8 +203,8 @@ nav{background:rgba(255,255,255,.94);backdrop-filter:blur(12px);border-bottom:1p
     <div class="hero-label">Schedule</div>
     <div class="hero-title">值班班表</div>
     <div style="display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap;">
-      <select class="styled-select" id="schedule-month" onchange="onScheduleMonthChange()" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3);backdrop-filter:blur(4px);"></select>
-      <button onclick="onShowSchedulePage()" style="padding:9px 18px;border-radius:10px;border:1.5px solid rgba(255,255,255,.4);background:rgba(255,255,255,.15);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;">🔄 載入班表</button>
+      <select id="schedule-month" onchange="onScheduleMonthChange()" style="font-size:14px;padding:9px 14px;border-radius:10px;border:none;background:#fff;color:#1e2420;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;font-weight:500;min-width:160px;"></select>
+      <button onclick="onShowSchedulePage()" style="padding:9px 18px;border-radius:10px;border:1.5px solid rgba(255,255,255,.6);background:rgba(255,255,255,.2);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;">🔄 載入</button>
     </div>
   </div>
   <div id="calendar-output">
