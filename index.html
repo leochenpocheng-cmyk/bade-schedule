@@ -794,6 +794,8 @@ function generateCalendar() {
   var ym = parseMonthVal(document.getElementById('admin-month').value);
   var y = ym[0], mo = ym[1];
   var key = y + '-' + (mo + 1);
+  // Ensure specialEvents are loaded from localStorage before generating
+  renderSpecialEvents();
   loadFromSheets(key).then(function() {
     var total = daysInMonth(y, mo);
     var managerDays = parseInt(document.getElementById('manager-days').value) || 0;
