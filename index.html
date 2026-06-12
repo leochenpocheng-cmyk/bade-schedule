@@ -1,990 +1,255 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>八德實驗室值班班表</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<style>
-:root{--sage:#5a7a5a;--sage-dark:#3d5c3d;--sage-light:#e8f0e8;--sage-mid:#c5d9c5;--cream:#faf8f4;--white:#fff;--ink:#1e2420;--ink-mid:#4a5548;--ink-light:#8a9688;--border:#dde5dd;--wfh-bg:#eef2ff;--wfh-border:#c5cfee;--red:#c0392b;--red-light:#fdf0ef;--amber:#d4882a;--amber-light:#fdf4e7;--blue:#2c5f9e;--sh-sm:0 1px 3px rgba(30,36,32,.06);--sh-md:0 4px 16px rgba(30,36,32,.08);--sh-lg:0 12px 40px rgba(30,36,32,.12);--r:16px;}
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;}
-nav{background:rgba(255,255,255,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100;box-shadow:var(--sh-sm);}
-.nav-brand{display:flex;align-items:center;gap:10px;}
-.nav-icon{width:36px;height:36px;background:var(--sage);border-radius:10px;display:flex;align-items:center;justify-content:center;}
-.nav-title{font-family:'Playfair Display',serif;font-size:17px;color:var(--ink);}
-.nav-tabs{display:flex;background:var(--sage-light);border-radius:10px;padding:3px;gap:2px;}
-.nav-tab{padding:7px 18px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;color:var(--ink-mid);border:none;background:transparent;transition:all .2s;font-family:'Plus Jakarta Sans',sans-serif;}
-.nav-tab.active{background:var(--white);color:var(--sage-dark);box-shadow:var(--sh-sm);}
-.page{display:none;padding:2.5rem 2rem;max-width:800px;margin:0 auto;}
-.page.active{display:block;}
-.hero{background:linear-gradient(135deg,var(--sage-dark) 0%,var(--sage) 60%,#7a9e7a 100%);border-radius:var(--r);padding:2rem 2.5rem;margin-bottom:1.5rem;position:relative;overflow:hidden;color:#fff;box-shadow:var(--sh-lg);}
-.hero-label{font-size:11px;font-weight:600;opacity:.7;letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;}
-.hero-title{font-family:'Playfair Display',serif;font-size:30px;font-weight:700;line-height:1.15;margin-bottom:8px;}
-.hero-sub{font-size:13px;opacity:.8;line-height:1.65;}
-.card{background:var(--white);border-radius:var(--r);border:1px solid var(--border);padding:2rem;margin-bottom:1.25rem;box-shadow:var(--sh-sm);}
-.sec-label{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-light);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
-.sec-label::after{content:'';flex:1;height:1px;background:var(--border);}
-.member-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:1.5rem;}
-.member-btn{padding:14px 6px 12px;border-radius:14px;border:1.5px solid var(--border);background:var(--cream);cursor:pointer;font-size:12px;font-weight:600;color:var(--ink-mid);transition:all .18s;text-align:center;font-family:'Plus Jakarta Sans',sans-serif;}
-.member-icon{width:46px;height:46px;border-radius:50%;margin:0 auto 8px;overflow:hidden;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;}
-.member-btn:hover{border-color:var(--sage);color:var(--sage-dark);transform:translateY(-2px);}
-.member-btn.selected{border-color:var(--sage-dark);background:var(--sage-dark);color:#fff;}
-.styled-select{font-size:14px;padding:9px 36px 9px 14px;border-radius:10px;border:1.5px solid var(--border);background:var(--cream);font-family:'Plus Jakarta Sans',sans-serif;color:var(--ink);cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a9688' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;}
-.date-grid-wrap{background:var(--cream);border-radius:12px;padding:1rem;margin-bottom:1.5rem;border:1px solid var(--border);}
-.dow-header{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px;}
-.dow-header span{text-align:center;font-size:10px;font-weight:600;color:var(--ink-light);text-transform:uppercase;padding:4px 0;}
-.date-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
-.date-btn{aspect-ratio:1;border-radius:10px;border:1.5px solid transparent;background:var(--white);cursor:pointer;font-size:12px;color:var(--ink);transition:all .15s;font-family:'Plus Jakarta Sans',sans-serif;display:flex;align-items:center;justify-content:center;box-shadow:var(--sh-sm);}
-.date-btn:hover:not(.disabled):not(.holiday){border-color:var(--red);color:var(--red);background:var(--red-light);}
-.date-btn.blocked{border-color:var(--red);background:var(--red-light);color:var(--red);font-weight:600;}
-.date-btn.disabled{opacity:.2;cursor:not-allowed;background:transparent;box-shadow:none;}
-.date-btn.wfh{background:var(--wfh-bg);border-color:var(--wfh-border);color:var(--blue);}
-.date-btn.wfh.blocked{background:var(--red-light);border-color:var(--red);color:var(--red);font-weight:600;}
-.date-btn.holiday{background:var(--red-light);color:var(--red);border-color:#f5c6c6;cursor:default;font-size:9px;text-align:center;padding:2px;line-height:1.3;}
-.date-btn.empty{background:transparent;box-shadow:none;cursor:default;border-color:transparent;}
-.btn{display:inline-flex;align-items:center;gap:7px;padding:11px 22px;border-radius:10px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .18s;}
-.btn-primary{background:var(--sage-dark);color:#fff;}
-.btn-primary:hover{background:var(--sage);}
-.btn-outline{background:var(--white);color:var(--sage-dark);border:1.5px solid var(--sage-mid);}
-.btn-ghost{background:transparent;color:var(--ink-light);border:1.5px solid var(--border);}
-.btn-danger{background:var(--red-light);color:var(--red);border:1.5px solid #f5c6c6;}
-.btn-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
-.submitted-list{display:flex;flex-direction:column;gap:6px;}
-.submitted-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;background:var(--cream);border:1px solid var(--border);}
-.s-avatar{width:36px;height:36px;border-radius:50%;overflow:hidden;flex-shrink:0;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;}
-.s-info{flex:1;}
-.s-name{font-size:13px;font-weight:600;}
-.s-days{font-size:11px;color:var(--ink-light);margin-top:2px;}
-.s-del{cursor:pointer;color:var(--ink-light);font-size:18px;padding:4px;border-radius:6px;}
-.s-del:hover{color:var(--red);}
-.config-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.5rem;}
-.config-label{font-size:11px;font-weight:600;color:var(--ink-light);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;}
-.config-item input[type=number]{width:100%;padding:9px 12px;border-radius:10px;border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--cream);}
-.special-list{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;}
-.special-item{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;background:var(--cream);border:1px solid var(--border);font-size:13px;}
-.special-item .s-del{font-size:16px;}
-.cal-wrap{background:var(--white);border-radius:var(--r);border:1px solid var(--border);overflow:hidden;box-shadow:var(--sh-md);}
-.cal-top{background:linear-gradient(135deg,var(--sage-dark) 0%,var(--sage) 100%);padding:1.75rem 2rem;color:#fff;}
-.cal-month-title{font-size:36px;font-weight:600;line-height:1;margin-bottom:1rem;}
-.cal-legend{display:flex;gap:10px;flex-wrap:wrap;}
-.cal-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;opacity:.9;}
-.cal-legend-dot{width:8px;height:8px;border-radius:50%;}
-.cal-stats-wrap{padding:1.25rem 1.75rem;border-bottom:1px solid var(--border);background:var(--cream);}
-.cal-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
-.cal-stat{background:var(--white);border-radius:10px;padding:10px 8px;text-align:center;border:1px solid var(--border);}
-.cal-stat-avatar{width:32px;height:32px;border-radius:50%;overflow:hidden;margin:0 auto 4px;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;}
-.cal-stat-name{font-size:10px;color:var(--ink-light);}
-.cal-stat-count{font-size:20px;font-weight:600;}
-.cal-grid-wrap{padding:0 1.5rem 1.5rem;}
-.cal-grid-hdr{display:grid;grid-template-columns:repeat(7,1fr);padding:12px 0 8px;}
-.cal-grid-hdr div{text-align:center;font-size:10px;font-weight:600;color:var(--ink-light);text-transform:uppercase;}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
-.cal-cell{min-height:82px;border-radius:10px;padding:6px 8px;background:var(--cream);}
-.cal-cell.empty-cell,.cal-cell.weekend{background:transparent;}
-.cal-cell.wed-cell{background:var(--sage-light);}
-.cal-cell.wfh-cell{background:var(--wfh-bg);}
-.cal-cell.holiday-cell{background:var(--red-light);}
-.cal-day-num{font-size:12px;color:var(--ink-light);margin-bottom:3px;display:block;}
-.cal-ev{font-size:10px;border-radius:5px;padding:2px 6px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500;cursor:pointer;}
-.ev-weekly{background:#dce8fe;color:#1a56b0;}
-.ev-holiday{background:#fde8e8;color:#b01a1a;}
-.ev-training{background:var(--amber-light);color:var(--amber);}
-.ev-Leo{background:#e8f5e9;color:#1b5e20;}
-.ev-Sam{background:#e3f2fd;color:#0d47a1;}
-.ev-Josh{background:#fce4ec;color:#880e4f;}
-.ev-Vimal{background:#fff8e1;color:#e65100;}
-.ev-Eloise{background:#ede7f6;color:#4527a0;}
-.cal-footer-bar{padding:12px 1.75rem;border-top:1px solid var(--border);background:var(--cream);font-size:11px;color:var(--ink-light);display:flex;justify-content:space-between;}
-.alert{padding:12px 16px;border-radius:10px;font-size:13px;margin-bottom:1rem;display:flex;align-items:flex-start;gap:10px;}
-.alert-info{background:var(--sage-light);color:var(--sage-dark);border:1px solid var(--sage-mid);}
-.alert-warn{background:var(--amber-light);color:var(--amber);border:1px solid #f0d090;}
-.divider{height:1px;background:var(--border);margin:1.5rem 0;}
-.chip{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;}
-.chip-blue{background:var(--wfh-bg);color:var(--blue);}
-#loading-bar{position:fixed;top:0;left:0;width:100%;height:3px;background:var(--sage);z-index:999;opacity:0;transition:opacity .3s;}
-#schedule-month option{background:#fff;color:#1e2420;}
-.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ink);color:#fff;padding:12px 22px;border-radius:10px;font-size:13px;font-weight:500;transition:transform .3s cubic-bezier(.34,1.56,.64,1);z-index:998;pointer-events:none;box-shadow:var(--sh-lg);}
-.toast.show{transform:translateX(-50%) translateY(0);}
-.edit-modal-wrap{display:none;margin-top:1rem;}
-.edit-modal-inner{background:var(--white);border-radius:14px;border:1.5px solid var(--sage-mid);box-shadow:var(--sh-md);padding:1.25rem 1.5rem;max-width:460px;margin:0 auto;}
-@media(max-width:600px){.page{padding:1.25rem 1rem;}.config-grid{grid-template-columns:1fr;}.cal-stats{grid-template-columns:repeat(3,1fr);}}
-</style>
-</head>
-<body>
-<div id="loading-bar"></div>
-<nav>
-  <div class="nav-brand">
-    <div class="nav-icon">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <rect x="3" y="2" width="3" height="10" rx="1" fill="#fff" opacity=".9"/>
-        <rect x="8.5" y="2" width="3" height="10" rx="1" fill="#fff" opacity=".9"/>
-        <path d="M3 12 Q2 16 5 17 Q10 19 15 17 Q18 16 17 12 L14 12 Q13.5 15 10 15 Q6.5 15 6 12Z" fill="#fff" opacity=".85"/>
-      </svg>
-    </div>
-    <div class="nav-title">八德實驗室值班班表</div>
-  </div>
-  <div class="nav-tabs">
-    <button class="nav-tab active" onclick="showPage('submit',this)">無法值班登記</button>
-    <button class="nav-tab" onclick="showPage('admin',this)">管理員</button>
-    <button class="nav-tab" onclick="showPage('schedule',this);onShowSchedulePage()">班表</button>
-  </div>
-</nav>
-<div class="toast" id="toast"></div>
-
-<!-- SUBMIT -->
-<div class="page active" id="page-submit">
-  <div class="hero">
-    <div class="hero-label">Team Schedule</div>
-    <div class="hero-title">本月不可排班<br>請在這裡登錄</div>
-    <div class="hero-sub">選擇你的名字，勾選無法出班的日期，送出後帥哥里歐即可一鍵排班。</div>
-  </div>
-  <div class="card">
-    <div class="sec-label">選擇成員</div>
-    <div class="member-grid" id="member-grid"></div>
-    <div class="sec-label">選擇月份</div>
-    <div style="margin-bottom:1.5rem"><select class="styled-select" id="submit-month" onchange="onSubmitMonthChange()"></select></div>
-    <div class="sec-label">點選不能出班的日期</div>
-    <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
-      <span class="chip chip-blue">🏠 週一 / 五 可居家</span>
-      <span style="font-size:11px;color:var(--ink-light);align-self:center">週末及國定假日自動排除</span>
-    </div>
-    <div class="date-grid-wrap">
-      <div class="dow-header"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
-      <div class="date-grid" id="date-grid"></div>
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="submitAvailability()">✓ 送出登錄</button>
-      <button class="btn btn-ghost" onclick="clearSelection()">清除選擇</button>
-    </div>
-  </div>
-  <div class="card">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-      <div class="sec-label" style="margin-bottom:0;flex:1">已登錄紀錄</div>
-      <button id="refresh-btn" onclick="refreshSubmissions()" style="padding:6px 14px;border-radius:8px;border:1.5px solid var(--sage-mid);background:var(--white);color:var(--sage-dark);font-size:12px;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;">🔄 同步最新</button>
-    </div>
-    <div id="submitted-list-wrap"></div>
-  </div>
-</div>
-
-<!-- ADMIN -->
-<div class="page" id="page-admin">
-  <div class="hero" style="background:linear-gradient(135deg,#2c3e50 0%,#3d5c6e 100%);">
-    <div class="hero-label">Admin Panel</div>
-    <div class="hero-title">一鍵產生<br>當月班表</div>
-    <div class="hero-sub">確認成員都已填寫後，按下「產生班表」即可輸出月曆。</div>
-  </div>
-  <div class="card">
-    <div class="sec-label">排班設定</div>
-    <div style="margin-bottom:1.25rem"><select class="styled-select" id="admin-month" onchange="onAdminMonthChange()"></select></div>
-    <div class="config-grid">
-      <div class="config-item">
-        <label class="config-label">Josh（主管）每月出班天數</label>
-        <input type="number" id="manager-days" value="2" min="0" max="20">
-      </div>
-      <div class="config-item">
-        <label class="config-label" style="opacity:0">-</label>
-        <div style="font-size:12px;color:var(--ink-light);padding:10px 0;line-height:1.6">其他成員依照可出班天數<br>自動平均分配</div>
-      </div>
-    </div>
-    <div class="sec-label">特殊事項</div>
-    <div class="special-list" id="special-list"></div>
-    <button class="btn btn-ghost" style="font-size:12px;padding:8px 16px;margin-top:6px" onclick="addSpecialEvent()">＋ 新增事項</button>
-    <div class="divider"></div>
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="generateCalendar()">⚡ 產生班表並前往</button>
-      <button class="btn btn-danger" style="margin-left:auto" onclick="clearAllData()">清除全部資料</button>
-    </div>
-  </div>
-</div>
-
-<!-- SCHEDULE -->
-<div class="page" id="page-schedule">
-  <div class="hero" style="background:linear-gradient(135deg,#1a3a2a 0%,#2d6235 60%,#4a8c5c 100%);">
-    <div class="hero-label">Schedule</div>
-    <div class="hero-title">值班班表</div>
-    <div style="display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap;">
-      <select id="schedule-month" onchange="onScheduleMonthChange()" style="font-size:14px;padding:9px 14px;border-radius:10px;border:none;background:#fff;color:#1e2420;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;font-weight:500;min-width:160px;-webkit-appearance:auto;appearance:auto;"></select>
-      <button onclick="onShowSchedulePage()" style="padding:9px 18px;border-radius:10px;border:1.5px solid rgba(255,255,255,.6);background:rgba(255,255,255,.2);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;">🔄 載入</button>
-    </div>
-  </div>
-  <div id="calendar-output">
-    <div style="text-align:center;padding:4rem 2rem;color:var(--ink-light);">
-      <div style="font-size:48px;margin-bottom:1rem;">📋</div>
-      <div style="font-size:15px;font-weight:500;margin-bottom:8px;color:var(--ink-mid)">班表尚未產生</div>
-      <div style="font-size:13px;margin-bottom:1.5rem">請先前往「管理員」頁面產生班表</div>
-      <button class="btn btn-outline" onclick="showPageById('admin')">前往管理員 →</button>
-    </div>
-  </div>
-  <div class="edit-modal-wrap" id="edit-modal-wrap">
-    <div class="edit-modal-inner">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-        <div style="font-size:14px;font-weight:600" id="popup-title">選擇值班人員</div>
-        <button onclick="closeEditPopup()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--ink-light);">×</button>
-      </div>
-      <div id="popup-members" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
-    </div>
-  </div>
-</div>
-
-<script>
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyNbPLWV96rH1I8vHbCfu5QpNfBw1anDpN1f_6cijesXk2oOstHhkC4TSPIAzYs1kBd/exec';
-var MEMBERS = ['Leo','Sam','Josh','Vimal','Eloise'];
-var MEMBER_COLORS = {Leo:'#1b5e20',Sam:'#0d47a1',Josh:'#880e4f',Vimal:'#e65100',Eloise:'#4527a0'};
-var MEMBER_BG = {Leo:'#e8f5e9',Sam:'#e3f2fd',Josh:'#fce4ec',Vimal:'#fff8e1',Eloise:'#ede7f6'};
-var MEMBER_SVG = {"Leo":"<svg viewBox=\"0 0 46 46\" fill=\"none\" width=\"46\" height=\"46\"><rect width=\"46\" height=\"46\" rx=\"23\" fill=\"#e8f5e9\"/><rect x=\"13\" y=\"14\" width=\"20\" height=\"18\" rx=\"2\" fill=\"#2e7d32\"/><rect x=\"15\" y=\"16\" width=\"16\" height=\"14\" rx=\"1\" fill=\"#388e3c\" opacity=\".85\"/><rect x=\"9\" y=\"17\" width=\"4\" height=\"2\" rx=\"1\" fill=\"#1b5e20\"/><rect x=\"9\" y=\"21\" width=\"4\" height=\"2\" rx=\"1\" fill=\"#1b5e20\"/><rect x=\"9\" y=\"25\" width=\"4\" height=\"2\" rx=\"1\" fill=\"#1b5e20\"/><rect x=\"33\" y=\"17\" width=\"4\" height=\"2\" rx=\"1\" fill=\"#1b5e20\"/><rect x=\"33\" y=\"21\" width=\"4\" height=\"2\" rx=\"1\" fill=\"#1b5e20\"/><rect x=\"33\" y=\"25\" width=\"4\" height=\"2\" rx=\"1\" fill=\"#1b5e20\"/><circle cx=\"16\" cy=\"17\" r=\"1.5\" fill=\"#a5d6a7\"/><text x=\"23\" y=\"25\" font-size=\"6\" fill=\"#c8e6c9\" text-anchor=\"middle\" font-family=\"monospace\">IC</text></svg>","Sam":"<svg viewBox=\"0 0 46 46\" fill=\"none\" width=\"46\" height=\"46\"><rect width=\"46\" height=\"46\" rx=\"23\" fill=\"#e3f2fd\"/><line x1=\"10\" y1=\"23\" x2=\"20\" y2=\"23\" stroke=\"#0d47a1\" stroke-width=\"2\" stroke-linecap=\"round\"/><line x1=\"26\" y1=\"23\" x2=\"36\" y2=\"23\" stroke=\"#0d47a1\" stroke-width=\"2\" stroke-linecap=\"round\"/><rect x=\"19\" y=\"15\" width=\"3\" height=\"16\" rx=\"1\" fill=\"#1565c0\"/><rect x=\"24\" y=\"15\" width=\"3\" height=\"16\" rx=\"1\" fill=\"#1565c0\"/></svg>","Josh":"<svg viewBox=\"0 0 46 46\" fill=\"none\" width=\"46\" height=\"46\"><rect width=\"46\" height=\"46\" rx=\"23\" fill=\"#fce4ec\"/><line x1=\"20\" y1=\"12\" x2=\"20\" y2=\"34\" stroke=\"#880e4f\" stroke-width=\"2.5\" stroke-linecap=\"round\"/><line x1=\"10\" y1=\"23\" x2=\"20\" y2=\"23\" stroke=\"#c62828\" stroke-width=\"2\" stroke-linecap=\"round\"/><line x1=\"20\" y1=\"18\" x2=\"33\" y2=\"11\" stroke=\"#c62828\" stroke-width=\"2\" stroke-linecap=\"round\"/><line x1=\"20\" y1=\"28\" x2=\"33\" y2=\"35\" stroke=\"#c62828\" stroke-width=\"2\" stroke-linecap=\"round\"/><circle cx=\"20\" cy=\"23\" r=\"3\" fill=\"#e53935\"/></svg>","Vimal":"<svg viewBox=\"0 0 46 46\" fill=\"none\" width=\"46\" height=\"46\"><rect width=\"46\" height=\"46\" rx=\"23\" fill=\"#fff8e1\"/><line x1=\"8\" y1=\"23\" x2=\"14\" y2=\"23\" stroke=\"#e65100\" stroke-width=\"2\" stroke-linecap=\"round\"/><line x1=\"32\" y1=\"23\" x2=\"38\" y2=\"23\" stroke=\"#e65100\" stroke-width=\"2\" stroke-linecap=\"round\"/><rect x=\"14\" y=\"18\" width=\"18\" height=\"10\" rx=\"2\" fill=\"#f57f17\"/><rect x=\"17\" y=\"18\" width=\"2\" height=\"10\" fill=\"#bf360c\" opacity=\".7\"/><rect x=\"21\" y=\"18\" width=\"2\" height=\"10\" fill=\"#e65100\" opacity=\".8\"/><rect x=\"25\" y=\"18\" width=\"2\" height=\"10\" fill=\"#ffd54f\" opacity=\".9\"/><rect x=\"29\" y=\"18\" width=\"2\" height=\"10\" fill=\"#bf360c\" opacity=\".7\"/></svg>","Eloise":"<svg viewBox=\"0 0 46 46\" fill=\"none\" width=\"46\" height=\"46\"><rect width=\"46\" height=\"46\" rx=\"23\" fill=\"#ede7f6\"/><line x1=\"8\" y1=\"23\" x2=\"17\" y2=\"23\" stroke=\"#6a1b9a\" stroke-width=\"2\" stroke-linecap=\"round\"/><line x1=\"29\" y1=\"23\" x2=\"38\" y2=\"23\" stroke=\"#6a1b9a\" stroke-width=\"2\" stroke-linecap=\"round\"/><polygon points=\"17,16 17,30 29,23\" fill=\"#7b1fa2\"/><line x1=\"29\" y1=\"16\" x2=\"29\" y2=\"30\" stroke=\"#4a148c\" stroke-width=\"2.5\" stroke-linecap=\"round\"/><line x1=\"32\" y1=\"14\" x2=\"35\" y2=\"11\" stroke=\"#ce93d8\" stroke-width=\"1.5\" stroke-linecap=\"round\"/></svg>"};
-var MONTHS = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
-var TW_HOLIDAYS = {
-  '2026-1':[{day:1,name:'元旦'}],
-  '2026-2':[{day:14,name:'春節'},{day:15,name:'春節'},{day:16,name:'除夕'},{day:17,name:'春節'},{day:18,name:'春節'},{day:19,name:'春節'},{day:20,name:'春節'},{day:21,name:'春節'},{day:22,name:'春節'}],
-  '2026-3':[{day:2,name:'和平紀念日'},{day:3,name:'和平紀念日'},{day:28,name:'和平紀念日'}],
-  '2026-4':[{day:3,name:'兒童節'},{day:4,name:'兒童節'},{day:5,name:'清明節'},{day:6,name:'清明節'}],
-  '2026-5':[{day:1,name:'勞動節'},{day:2,name:'勞動節'},{day:3,name:'勞動節'}],
-  '2026-6':[{day:19,name:'端午節'},{day:20,name:'端午節'},{day:21,name:'端午節'}],
-  '2026-9':[{day:25,name:'中秋節'},{day:26,name:'中秋節'},{day:27,name:'中秋節'},{day:28,name:'教師節'}],
-  '2026-10':[{day:10,name:'國慶日'},{day:11,name:'國慶日'},{day:12,name:'國慶日'},{day:23,name:'光復節'},{day:24,name:'光復節'},{day:25,name:'光復節'}],
-  '2026-12':[{day:25,name:'行憲紀念日'},{day:26,name:'行憲紀念日'},{day:27,name:'行憲紀念日'}]
+const SHEET_ID = '1kEA-WyQxqroTyaMqG3C368IFLKUL8mw0rYjj9QvX00k';
+const SITE_URL = 'https://leochenpocheng-cmyk.github.io/bade-schedule';
+const MEMBERS_EMAIL = {
+  Leo:    'LeoPC.Chen@moxa.com',
+  Josh:   'JoshMP.Xiong@moxa.com',
+  Sam:    'SamCH.Hsiao@moxa.com',
+  Eloise: 'EloiseCY.Shih@moxa.com',
+  Vimal:  'Vimal.Pandey@moxa.com'
 };
+const CC_EMAIL = 'EmilyHI.Chen@moxa.com';
+const MONTHS_TW = ['1\u6708','2\u6708','3\u6708','4\u6708','5\u6708','6\u6708','7\u6708','8\u6708','9\u6708','10\u6708','11\u6708','12\u6708'];
+const DOW_TW = ['\u65e5','\u4e00','\u4e8c','\u4e09','\u56db','\u4e94','\u516d'];
 
-function getTWHolidays(y, mo) {
-  return TW_HOLIDAYS[y + '-' + (mo + 1)] || [];
-}
-
-// STATE
-var state = {submissions: [], specialEvents: {}};
-var selectedMember = null;
-var selectedDates = {};
-
-function saveSpecialEvents() {
-  try { localStorage.setItem('se_v7', JSON.stringify(state.specialEvents)); } catch(e) {}
-}
-function loadSpecialEventsFromStorage() {
-  try { return JSON.parse(localStorage.getItem('se_v7')) || {}; } catch(e) { return {}; }
-}
-function saveScheduleLocal(key, data) {
-  try { localStorage.setItem('sch_' + key, JSON.stringify(data)); } catch(e) {}
-}
-function loadScheduleLocal(key) {
-  try { var d = localStorage.getItem('sch_' + key); return d ? JSON.parse(d) : null; } catch(e) { return null; }
+function getSheet(name) {
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  if (name) {
+    var s = ss.getSheetByName(name);
+    if (!s) s = ss.insertSheet(name);
+    return s;
+  }
+  return ss.getSheetByName('Sheet1') || ss.getSheets()[0];
 }
 
-// LOADING
-function showLoading(on) {
-  var el = document.getElementById('loading-bar');
-  if (el) el.style.opacity = on ? '1' : '0';
+function setTextCell(sheet, row, col, value) {
+  var cell = sheet.getRange(row, col);
+  cell.setNumberFormat('@STRING@');
+  cell.setValue(value);
 }
 
-// JSONP
-function jsonpCall(url) {
-  return new Promise(function(resolve, reject) {
-    var cb = '_cb' + Date.now() + Math.floor(Math.random() * 9999);
-    var script = document.createElement('script');
-    script.src = url + '&callback=' + cb;
-    var timer = setTimeout(function() {
-      delete window[cb];
-      if (script.parentNode) document.head.removeChild(script);
-      reject(new Error('timeout'));
-    }, 12000);
-    window[cb] = function(data) {
-      clearTimeout(timer);
-      delete window[cb];
-      if (script.parentNode) document.head.removeChild(script);
-      resolve(data);
-    };
-    script.onerror = function() {
-      clearTimeout(timer);
-      delete window[cb];
-      if (script.parentNode) document.head.removeChild(script);
-      reject(new Error('error'));
-    };
-    document.head.appendChild(script);
-  });
+function doGet(e) {
+  var action = e.parameter.action || 'read';
+  var callback = e.parameter.callback || '';
+  var result;
+  if (action === 'write') result = handleWrite(e);
+  else if (action === 'readSchedule') result = handleReadSchedule(e);
+  else result = handleRead(e);
+  var json = JSON.stringify(result);
+  if (callback) {
+    return ContentService.createTextOutput(callback + '(' + json + ')').setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
+  return ContentService.createTextOutput(json).setMimeType(ContentService.MimeType.JSON);
 }
 
-function sheetsRead(key) {
-  var url = SCRIPT_URL + '?action=read&key=' + encodeURIComponent(key);
-  return jsonpCall(url);
-}
-function sheetsWrite(data) {
-  var url = SCRIPT_URL + '?action=write&data=' + encodeURIComponent(JSON.stringify(data));
-  return jsonpCall(url);
-}
-function sheetsReadSchedule(key) {
-  var url = SCRIPT_URL + '?action=readSchedule&key=' + encodeURIComponent(key);
-  return jsonpCall(url);
-}
-
-function loadFromSheets(key) {
-  showLoading(true);
-  return sheetsRead(key).then(function(data) {
-    if (Array.isArray(data) && data.length > 0) {
-      var sheetsMembers = data.map(function(s) { return s.member; });
-      state.submissions = state.submissions.filter(function(s) {
-        return !(s.key === key && sheetsMembers.indexOf(s.member) >= 0);
-      });
-      data.forEach(function(s) {
-        state.submissions.push({
-          member: s.member,
-          key: s.key,
-          dates: (s.dates || []).map(Number)
-        });
-      });
+function handleRead(e) {
+  var sheet = getSheet();
+  var key = e.parameter.key || '';
+  var rows = sheet.getDataRange().getValues();
+  var results = [];
+  for (var i = 1; i < rows.length; i++) {
+    if (!rows[i][1] || rows[i][1] === '__schedule__') continue;
+    var rowKey = String(rows[i][2]);
+    if (!key || rowKey === key) {
+      results.push({ member: String(rows[i][1]), key: rowKey, dates: JSON.parse(rows[i][3] || '[]') });
     }
-    showLoading(false);
-  }).catch(function(e) {
-    console.error('loadFromSheets', e);
-    showLoading(false);
-  });
+  }
+  return results;
 }
 
-function saveToSheets(submission) {
-  showLoading(true);
-  return sheetsWrite(submission).then(function() {
-    showLoading(false);
-  }).catch(function(e) {
-    console.error('saveToSheets', e);
-    showLoading(false);
-  });
+function handleReadSchedule(e) {
+  var sheet = getSheet('Schedule');
+  var key = e.parameter.key || '';
+  var rows = sheet.getDataRange().getValues();
+  for (var i = 1; i < rows.length; i++) {
+    if (String(rows[i][0]) === key) return { key: String(rows[i][0]), scheduleData: String(rows[i][1]) };
+  }
+  return null;
 }
 
-function deleteFromSheets(member, key) {
-  return sheetsWrite({member: member, key: key, dates: [], _delete: true}).catch(function(e) {
-    console.error('deleteFromSheets', e);
-  });
-}
-
-function saveScheduleToSheets(cs) {
-  if (!cs) return;
+function handleWrite(e) {
+  var data;
   try {
-    var assignedClean = {};
-    Object.keys(cs.assigned).forEach(function(d) { assignedClean[d] = cs.assigned[d]; });
-    var scheduleData = JSON.stringify({
-      assigned: assignedClean, y: cs.y, mo: cs.mo,
-      managerName: cs.managerName, managerDays: cs.managerDays
-    });
-    var key = cs.y + '-' + (cs.mo + 1);
-    saveScheduleLocal(key, JSON.parse(scheduleData));
-    sheetsWrite({member: '__schedule__', key: key, dates: [], scheduleData: scheduleData})
-      .then(function() { console.log('Schedule saved to Sheets'); })
-      .catch(function(e) { console.error('Schedule Sheets save error', e); });
-  } catch(e) { console.error('saveScheduleToSheets', e); }
-}
+    var raw = e.parameter.data || (e.postData && e.postData.contents) || '{}';
+    data = JSON.parse(raw);
+  } catch(err) { return { ok: false, error: 'parse error' }; }
 
-function loadSchedule(y, mo) {
-  var key = y + '-' + (mo + 1);
-  var local = loadScheduleLocal(key);
-  if (local) {
-    applySchedule(local);
-    console.log('Schedule loaded from localStorage');
-    return Promise.resolve();
-  }
-  return sheetsReadSchedule(key).then(function(data) {
-    if (data && data.scheduleData) {
-      try {
-        var sd = JSON.parse(data.scheduleData);
-        saveScheduleLocal(key, sd);
-        applySchedule(sd);
-        console.log('Schedule loaded from Sheets');
-      } catch(e) { console.error('parse schedule error', e); }
+  if (data.member === '__schedule__') {
+    var sheet = getSheet('Schedule');
+    var rows = sheet.getDataRange().getValues();
+    var key = data.key;
+    var found = -1;
+    for (var i = 1; i < rows.length; i++) {
+      if (String(rows[i][0]) === key) { found = i + 1; break; }
     }
-  }).catch(function(e) { console.error('loadSchedule', e); });
-}
-
-function applySchedule(sd) {
-  var key = sd.y + '-' + (sd.mo + 1);
-  window._calState = {
-    y: sd.y, mo: sd.mo,
-    totalDays: daysInMonth(sd.y, sd.mo),
-    firstDow: new Date(sd.y, sd.mo, 1).getDay(),
-    holidayDays: buildHolidaySet(sd.y, sd.mo, key),
-    specials: state.specialEvents[key] || [],
-    assigned: sd.assigned,
-    counts: {},
-    managerName: sd.managerName,
-    managerDays: sd.managerDays
-  };
-  MEMBERS.forEach(function(m) { window._calState.counts[m] = 0; });
-  Object.keys(sd.assigned).forEach(function(d) {
-    var m = sd.assigned[d];
-    if (m && window._calState.counts[m] !== undefined) window._calState.counts[m]++;
-  });
-}
-
-function buildHolidaySet(y, mo, key) {
-  var hols = new Set();
-  (state.specialEvents[key] || []).forEach(function(e) {
-    if (e.type === 'holiday') hols.add(e.day);
-  });
-  // Always include TW public holidays
-  getTWHolidays(y, mo).forEach(function(h) { hols.add(h.day); });
-  return hols;
-}
-
-// HELPERS
-function parseMonthVal(v) { var p = v.split('-').map(Number); return [p[0], p[1]]; }
-function daysInMonth(y, mo) { return new Date(y, mo + 1, 0).getDate(); }
-function getDow(y, mo, d) { return new Date(y, mo, d).getDay(); }
-function toast(msg) {
-  var t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(function() { t.classList.remove('show'); }, 2500);
-}
-
-// PAGES
-function showPage(id, el) {
-  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
-  document.querySelectorAll('.nav-tab').forEach(function(t) { t.classList.remove('active'); });
-  document.getElementById('page-' + id).classList.add('active');
-  el.classList.add('active');
-  if (id === 'admin') renderSpecialEvents();
-}
-function showPageById(id) {
-  var tabs = document.querySelectorAll('.nav-tab');
-  for (var i = 0; i < tabs.length; i++) {
-    var oc = tabs[i].getAttribute('onclick') || '';
-    if (oc.indexOf("'" + id + "'") >= 0) { showPage(id, tabs[i]); return; }
-  }
-}
-function onShowSchedulePage() {
-  var smEl = document.getElementById('schedule-month');
-  var ym = smEl ? parseMonthVal(smEl.value) : parseMonthVal(document.getElementById('admin-month').value);
-  var key = ym[0] + '-' + (ym[1] + 1);
-  // Check if current _calState matches selected month
-  if (window._calState && window._calState.y === ym[0] && window._calState.mo === ym[1]) {
-    renderCalendar();
-  } else {
-    // Load from localStorage or Sheets for selected month
-    var local = loadScheduleLocal(key);
-    if (local) {
-      applySchedule(local);
-      renderCalendar();
+    if (found > 0) {
+      setTextCell(sheet, found, 2, data.scheduleData);
+      setTextCell(sheet, found, 3, new Date().toISOString());
     } else {
-      document.getElementById('calendar-output').innerHTML = '<div style="text-align:center;padding:3rem 2rem;color:var(--ink-light);"><div style="font-size:36px;margin-bottom:1rem;">⏳</div><div style="font-size:14px;">載入中...</div></div>';
-      loadSchedule(ym[0], ym[1]).then(function() {
-        if (window._calState && window._calState.y === ym[0] && window._calState.mo === ym[1]) {
-          renderCalendar();
-        } else {
-          document.getElementById('calendar-output').innerHTML = '<div style="text-align:center;padding:3rem 2rem;color:var(--ink-light);"><div style="font-size:36px;margin-bottom:1rem;">📋</div><div style="font-size:14px;font-weight:500;margin-bottom:8px;">尚無此月份班表</div><div style="font-size:12px;">請先至「管理員」頁面產生班表</div></div>';
-        }
-      });
+      var nr = sheet.getLastRow() + 1;
+      sheet.appendRow(['', data.scheduleData, new Date().toISOString()]);
+      setTextCell(sheet, nr, 1, key);
     }
+    return { ok: true };
   }
+
+  var sheet2 = getSheet();
+  var rowKey = data.member + '|' + data.key;
+  var rows2 = sheet2.getDataRange().getValues();
+  for (var j = rows2.length - 1; j >= 1; j--) {
+    if (String(rows2[j][0]) === rowKey) sheet2.deleteRow(j + 1);
+  }
+  if (!data._delete) {
+    var nr2 = sheet2.getLastRow() + 1;
+    sheet2.appendRow([rowKey, data.member, '', JSON.stringify(data.dates), new Date().toISOString()]);
+    setTextCell(sheet2, nr2, 3, data.key);
+  }
+  return { ok: true };
 }
 
-function onScheduleMonthChange() {
-  var smEl = document.getElementById('schedule-month');
-  var ym = parseMonthVal(smEl.value);
-  var key = ym[0] + '-' + (ym[1] + 1);
-  var local = loadScheduleLocal(key);
-  if (local) {
-    applySchedule(local);
-    renderCalendar();
-  } else {
-    document.getElementById('calendar-output').innerHTML = '<div style="text-align:center;padding:3rem 2rem;color:var(--ink-light);"><div style="font-size:36px;margin-bottom:1rem;">⏳</div><div style="font-size:14px;">載入中...</div></div>';
-    loadSchedule(ym[0], ym[1]).then(function() {
-      if (window._calState && window._calState.y === ym[0] && window._calState.mo === ym[1]) {
-        renderCalendar();
-      } else {
-        document.getElementById('calendar-output').innerHTML = '<div style="text-align:center;padding:3rem 2rem;color:var(--ink-light);"><div style="font-size:36px;margin-bottom:1rem;">📋</div><div style="font-size:14px;font-weight:500;margin-bottom:8px;">尚無此月份班表</div><div style="font-size:12px;">請先至「管理員」頁面產生班表</div></div>';
-      }
-    });
-  }
-}
+function doPost(e) { return doGet(e); }
 
-// INIT
-function init() {
+function sendMonthlyScheduleEmail() {
   var now = new Date();
-  ['submit-month', 'admin-month'].forEach(function(id) {
-    var sel = document.getElementById(id);
-    for (var i = 0; i < 12; i++) {
-      var d = new Date(now.getFullYear(), now.getMonth() + i, 1);
-      var o = document.createElement('option');
-      o.value = d.getFullYear() + '-' + d.getMonth();
-      o.textContent = d.getFullYear() + ' 年 ' + MONTHS[d.getMonth()];
-      if (i === 0) o.selected = true;
-      sel.appendChild(o);
-    }
-  });
+  var nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  var year = nextMonth.getFullYear();
+  var month = nextMonth.getMonth();
+  var monthKey = year + '-' + (month + 1);
+  var monthLabel = year + ' \u5e74 ' + MONTHS_TW[month];
 
-  var mg = document.getElementById('member-grid');
-  MEMBERS.forEach(function(m) {
-    var btn = document.createElement('button');
-    btn.className = 'member-btn';
-    btn.dataset.member = m;
-    var icon = document.createElement('div');
-    icon.className = 'member-icon';
-    icon.style.background = MEMBER_BG[m];
-    icon.innerHTML = MEMBER_SVG[m];
-    btn.appendChild(icon);
-    btn.appendChild(document.createTextNode(m));
-    btn.onclick = function() { selectMember(m); };
-    mg.appendChild(btn);
-  });
-
-  state.specialEvents = loadSpecialEventsFromStorage();
-  renderDateGrid();
-  renderSpecialEvents();
-
-  var ym = parseMonthVal(document.getElementById('submit-month').value);
-  loadFromSheets(ym[0] + '-' + (ym[1] + 1)).then(function() { renderSubmittedList(); });
-
-  var aym = parseMonthVal(document.getElementById('admin-month').value);
-  loadSchedule(aym[0], aym[1]);
-
-  // Populate schedule month selector
-  var smt = document.getElementById('schedule-month');
-  var now2 = new Date();
-  for (var si = -1; si < 12; si++) {
-    var sd2 = new Date(now2.getFullYear(), now2.getMonth() + si, 1);
-    var so = document.createElement('option');
-    so.value = sd2.getFullYear() + '-' + sd2.getMonth();
-    so.textContent = sd2.getFullYear() + ' 年 ' + MONTHS[sd2.getMonth()];
-    if (si === 0) so.selected = true;
-    smt.appendChild(so);
-  }
-
-  setInterval(function() {
-    var ym2 = parseMonthVal(document.getElementById('submit-month').value);
-    loadFromSheets(ym2[0] + '-' + (ym2[1] + 1)).then(function() { renderSubmittedList(); });
-  }, 30000);
-}
-
-// MEMBER SELECT
-function selectMember(m) {
-  selectedMember = m;
-  selectedDates = {};
-  document.querySelectorAll('.member-btn').forEach(function(b) {
-    b.classList.toggle('selected', b.dataset.member === m);
-  });
-  var ym = parseMonthVal(document.getElementById('submit-month').value);
-  var key = ym[0] + '-' + (ym[1] + 1);
-  var existing = null;
-  for (var i = 0; i < state.submissions.length; i++) {
-    if (state.submissions[i].member === m && state.submissions[i].key === key) {
-      existing = state.submissions[i]; break;
+  var scheduleSheet = getSheet('Schedule');
+  var scheduleRows = scheduleSheet.getDataRange().getValues();
+  var scheduleData = null;
+  for (var i = 1; i < scheduleRows.length; i++) {
+    if (String(scheduleRows[i][0]) === monthKey) {
+      try { scheduleData = JSON.parse(String(scheduleRows[i][1])); } catch(e) {}
+      break;
     }
   }
-  if (existing) {
-    existing.dates.forEach(function(d) { selectedDates[d] = true; });
-  }
-  renderDateGrid();
-}
 
-// DATE GRID
-function renderDateGrid() {
-  var grid = document.getElementById('date-grid');
-  grid.innerHTML = '';
-  var ym = parseMonthVal(document.getElementById('submit-month').value);
-  var y = ym[0], mo = ym[1];
-  var total = daysInMonth(y, mo);
-  var hols = {};
-  getTWHolidays(y, mo).forEach(function(h) { hols[h.day] = h.name; });
-  var firstDow = getDow(y, mo, 1);
-  for (var i = 0; i < firstDow; i++) {
-    var e = document.createElement('div'); e.className = 'date-btn empty'; grid.appendChild(e);
-  }
-  for (var d = 1; d <= total; d++) {
-    var dow = getDow(y, mo, d);
-    var btn = document.createElement('button');
-    btn.className = 'date-btn';
-    btn.textContent = d;
-    var isWknd = dow === 0 || dow === 6;
-    var isWFH = dow === 1 || dow === 5;
-    var isHol = !!hols[d];
-    if (isWknd) {
-      btn.classList.add('disabled');
-      btn.style.cssText = 'aspect-ratio:1;border-radius:10px;border:none;background:transparent;box-shadow:none;cursor:default;opacity:.2;font-size:12px;display:flex;align-items:center;justify-content:center;';
-    } else if (isHol) {
-      btn.classList.add('holiday');
-      btn.innerHTML = '<span style="font-size:9px;line-height:1.3;text-align:center;padding:2px">' + hols[d] + '<br><b>' + d + '</b></span>';
-    } else {
-      if (isWFH) btn.classList.add('wfh');
-      if (selectedDates[d]) btn.classList.add('blocked');
-      (function(day, b) {
-        b.onclick = function() { toggleDate(day, b); };
-      })(d, btn);
-    }
-    grid.appendChild(btn);
-  }
-  var rem = (firstDow + total) % 7;
-  if (rem !== 0) {
-    for (var j = 0; j < 7 - rem; j++) {
-      var ee = document.createElement('div'); ee.className = 'date-btn empty'; grid.appendChild(ee);
+  var dataSheet = getSheet();
+  var dataRows = dataSheet.getDataRange().getValues();
+  var blockedMap = {};
+  for (var j = 1; j < dataRows.length; j++) {
+    var k = String(dataRows[j][2]);
+    if (k === monthKey && dataRows[j][1]) {
+      var member = String(dataRows[j][1]);
+      try { blockedMap[member] = JSON.parse(dataRows[j][3] || '[]'); } catch(e2) {}
     }
   }
-}
 
-function toggleDate(d, btn) {
-  if (!selectedMember) { toast('⚠️ 請先選擇成員'); return; }
-  if (selectedDates[d]) {
-    delete selectedDates[d]; btn.classList.remove('blocked');
-  } else {
-    selectedDates[d] = true; btn.classList.add('blocked');
-  }
-}
-function clearSelection() {
-  selectedDates = {};
-  document.querySelectorAll('.date-btn.blocked').forEach(function(b) { b.classList.remove('blocked'); });
-}
-function onSubmitMonthChange() {
-  selectedDates = {};
-  var ym = parseMonthVal(document.getElementById('submit-month').value);
-  loadFromSheets(ym[0] + '-' + (ym[1] + 1)).then(function() {
-    renderDateGrid(); renderSubmittedList();
-  });
-}
+  var COLORS = {Leo:'#1b5e20',Sam:'#0d47a1',Josh:'#880e4f',Vimal:'#e65100',Eloise:'#4527a0'};
+  var BGS = {Leo:'#e8f5e9',Sam:'#e3f2fd',Josh:'#fce4ec',Vimal:'#fff8e1',Eloise:'#ede7f6'};
+  var daysInMonth = new Date(year, month + 1, 0).getDate();
+  var firstDow = new Date(year, month, 1).getDay();
 
-// SUBMIT
-function submitAvailability() {
-  if (!selectedMember) { toast('⚠️ 請先選擇成員'); return; }
-  var ym = parseMonthVal(document.getElementById('submit-month').value);
-  var y = ym[0], mo = ym[1];
-  var key = y + '-' + (mo + 1);
-  var dates = Object.keys(selectedDates).map(Number).sort(function(a, b) { return a - b; });
-  var submission = {member: selectedMember, key: key, year: y, month: mo, dates: dates};
-  state.submissions = state.submissions.filter(function(s) {
-    return !(s.member === selectedMember && s.key === key);
-  });
-  state.submissions.push(submission);
-  renderSubmittedList();
-  var member = selectedMember;
-  deleteFromSheets(member, key).then(function() {
-    return saveToSheets(submission);
-  }).then(function() {
-    toast('✓ ' + member + ' 已儲存，' + dates.length + ' 天不可排班');
-  });
-}
-
-function refreshSubmissions() {
-  var btn = document.getElementById('refresh-btn');
-  if (btn) { btn.textContent = '⏳ 同步中...'; btn.disabled = true; }
-  var ym = parseMonthVal(document.getElementById('submit-month').value);
-  loadFromSheets(ym[0] + '-' + (ym[1] + 1)).then(function() {
-    renderSubmittedList();
-    if (btn) {
-      btn.textContent = '✅ 已同步'; btn.disabled = false;
-      setTimeout(function() { btn.innerHTML = '🔄 同步最新'; }, 2000);
-    }
-  });
-}
-
-function renderSubmittedList() {
-  var wrap = document.getElementById('submitted-list-wrap');
-  var ym = parseMonthVal(document.getElementById('submit-month').value);
-  var key = ym[0] + '-' + (ym[1] + 1);
-  var subs = state.submissions.filter(function(s) { return s.key === key; });
-  wrap.innerHTML = '';
-  if (!subs.length) {
-    wrap.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--ink-light);font-size:14px;">尚無人登錄本月資料</div>';
-    return;
-  }
-  var list = document.createElement('div');
-  list.className = 'submitted-list';
-  subs.forEach(function(s) {
-    var item = document.createElement('div');
-    item.className = 'submitted-item';
-    var avatar = document.createElement('div');
-    avatar.className = 's-avatar';
-    avatar.style.background = MEMBER_BG[s.member];
-    avatar.innerHTML = MEMBER_SVG[s.member];
-    var info = document.createElement('div');
-    info.className = 's-info';
-    var name = document.createElement('div');
-    name.className = 's-name';
-    name.textContent = s.member;
-    var days = document.createElement('div');
-    days.className = 's-days';
-    days.textContent = s.dates.length ? '不可排班：' + s.dates.join('、') + ' 日' : '全月可排班 ✓';
-    info.appendChild(name); info.appendChild(days);
-    var del = document.createElement('span');
-    del.className = 's-del'; del.textContent = '×';
-    (function(sub) {
-      del.onclick = function() {
-        state.submissions = state.submissions.filter(function(x) { return x !== sub; });
-        deleteFromSheets(sub.member, sub.key);
-        renderSubmittedList();
-      };
-    })(s);
-    item.appendChild(avatar); item.appendChild(info); item.appendChild(del);
-    list.appendChild(item);
-  });
-  wrap.appendChild(list);
-}
-
-// SPECIAL EVENTS
-function getSpecialKey() {
-  var ym = parseMonthVal(document.getElementById('admin-month').value);
-  return ym[0] + '-' + (ym[1] + 1);
-}
-function onAdminMonthChange() { renderSpecialEvents(); }
-
-function renderSpecialEvents() {
-  var ym = parseMonthVal(document.getElementById('admin-month').value);
-  var y = ym[0], mo = ym[1];
-  var key = y + '-' + (mo + 1);
-  if (!state.specialEvents[key]) state.specialEvents[key] = [];
-  var changed = false;
-  if (!state.specialEvents[key].some(function(e) { return e.type === 'weekly'; })) {
-    for (var d = 1; d <= daysInMonth(y, mo); d++) {
-      if (getDow(y, mo, d) === 3) {
-        state.specialEvents[key].push({day: d, name: 'Weekly Meeting', type: 'weekly'});
-      }
-    }
-    changed = true;
-  }
-  getTWHolidays(y, mo).forEach(function(h) {
-    if (!state.specialEvents[key].some(function(e) { return e.day === h.day && e.type === 'holiday'; })) {
-      state.specialEvents[key].push({day: h.day, name: h.name, type: 'holiday'});
-      changed = true;
-    }
-  });
-  if (changed) saveSpecialEvents();
-  var list = document.getElementById('special-list');
-  list.innerHTML = '';
-  state.specialEvents[key].forEach(function(ev, i) {
-    if (ev.type === 'holiday') return;
-    var row = document.createElement('div');
-    row.className = 'special-item';
-    var dayInp = document.createElement('input');
-    dayInp.type = 'number'; dayInp.value = ev.day; dayInp.min = 1; dayInp.max = 31;
-    dayInp.style.cssText = 'width:46px;border:1px solid #dde5dd;border-radius:6px;padding:5px 7px;font-size:13px;text-align:center;';
-    (function(idx) { dayInp.onchange = function() { updateSpecial(key, idx, 'day', this.value); }; })(i);
-    var dayLbl = document.createElement('span');
-    dayLbl.textContent = '日'; dayLbl.style.cssText = 'font-size:12px;color:#8a9688;';
-    var nameInp = document.createElement('input');
-    nameInp.type = 'text'; nameInp.value = ev.name; nameInp.placeholder = '事項名稱';
-    nameInp.style.cssText = 'flex:1;border:none;background:transparent;font-size:13px;outline:none;';
-    (function(idx) { nameInp.onchange = function() { updateSpecial(key, idx, 'name', this.value); }; })(i);
-    var typeSelect = document.createElement('select');
-    typeSelect.style.cssText = 'font-size:11px;border:1px solid #dde5dd;border-radius:6px;padding:4px 8px;background:#fff;';
-    [['weekly','📅 週會'],['training','📚 訓練']].forEach(function(opt) {
-      var o = document.createElement('option');
-      o.value = opt[0]; o.textContent = opt[1];
-      if (ev.type === opt[0]) o.selected = true;
-      typeSelect.appendChild(o);
-    });
-    (function(idx) { typeSelect.onchange = function() { updateSpecial(key, idx, 'type', this.value); }; })(i);
-    var delBtn = document.createElement('span');
-    delBtn.className = 's-del'; delBtn.textContent = '×';
-    (function(idx) { delBtn.onclick = function() { removeSpecial(key, idx); }; })(i);
-    row.appendChild(dayInp); row.appendChild(dayLbl); row.appendChild(nameInp);
-    row.appendChild(typeSelect); row.appendChild(delBtn);
-    list.appendChild(row);
-  });
-}
-
-function addSpecialEvent() {
-  var key = getSpecialKey();
-  if (!state.specialEvents[key]) state.specialEvents[key] = [];
-  state.specialEvents[key].push({day: 1, name: '', type: 'training'});
-  saveSpecialEvents(); renderSpecialEvents();
-}
-function updateSpecial(key, i, field, val) {
-  if (!state.specialEvents[key]) return;
-  state.specialEvents[key][i][field] = field === 'day' ? parseInt(val) : val;
-  saveSpecialEvents();
-}
-function removeSpecial(key, i) {
-  state.specialEvents[key].splice(i, 1);
-  saveSpecialEvents(); renderSpecialEvents();
-}
-
-// GENERATE CALENDAR
-function generateCalendar() {
-  var ym = parseMonthVal(document.getElementById('admin-month').value);
-  var y = ym[0], mo = ym[1];
-  var key = y + '-' + (mo + 1);
-  // Ensure specialEvents are loaded from localStorage before generating
-  renderSpecialEvents();
-  loadFromSheets(key).then(function() {
-    var total = daysInMonth(y, mo);
-    var managerDays = parseInt(document.getElementById('manager-days').value) || 0;
-    var managerName = 'Josh';
-    var specials = state.specialEvents[key] || [];
-    var blockedMap = {};
-    MEMBERS.forEach(function(m) { blockedMap[m] = {}; });
-    state.submissions.filter(function(s) { return s.key === key; }).forEach(function(s) {
-      s.dates.forEach(function(d) { blockedMap[s.member][Number(d)] = true; });
-    });
-    var holidayDays = {};
-    // From special events - exclude holidays AND training days from scheduling
-    specials.forEach(function(e) {
-      if (e.type === 'holiday' || e.type === 'training') holidayDays[e.day] = true;
-    });
-    // Always include TW public holidays
-    getTWHolidays(y, mo).forEach(function(h) { holidayDays[h.day] = true; });
-
-    function dow(d) { return new Date(y, mo, d).getDay(); }
-    var tueThu = [], monFri = [];
-    for (var d = 1; d <= total; d++) {
-      var w = dow(d);
-      if (w === 0 || w === 6 || w === 3 || holidayDays[d]) continue;
-      if (w === 2 || w === 4) tueThu.push(d); else monFri.push(d);
-    }
-    function avail(d) {
-      return MEMBERS.filter(function(m) { return !blockedMap[m][d]; });
-    }
-    var assigned = {}, counts = {}, mfC = {};
-    MEMBERS.forEach(function(m) { counts[m] = 0; mfC[m] = 0; });
-    if (managerDays > 0) {
-      var pool = tueThu.filter(function(d) { return avail(d).indexOf(managerName) >= 0; });
-      var step = Math.floor(pool.length / (managerDays + 1));
-      for (var i = 0; i < managerDays && (i * step + step) < pool.length; i++) {
-        var dd = pool[i * step + step];
-        assigned[dd] = managerName; counts[managerName]++;
-      }
-    }
-    tueThu.forEach(function(d) {
-      if (assigned[d]) return;
-      var a = avail(d).filter(function(m) { return m !== managerName; });
-      if (!a.length) return;
-      a.sort(function(x, z) { return counts[x] - counts[z]; });
-      assigned[d] = a[0]; counts[a[0]]++;
-    });
-    monFri.forEach(function(d) {
-      var a = avail(d).filter(function(m) { return m !== managerName; });
-      if (!a.length) return;
-      a.sort(function(x, z) { return mfC[x] !== mfC[z] ? mfC[x] - mfC[z] : counts[x] - counts[z]; });
-      assigned[d] = a[0]; counts[a[0]]++; mfC[a[0]]++;
-    });
-
-    var holSet = new Set();
-    Object.keys(holidayDays).forEach(function(d) { holSet.add(Number(d)); });
-    window._calState = {y: y, mo: mo, totalDays: total, firstDow: new Date(y, mo, 1).getDay(),
-      holidayDays: holSet, specials: specials, assigned: assigned, counts: counts,
-      managerName: managerName, managerDays: managerDays};
-    saveScheduleToSheets(window._calState);
-    showPageById('schedule');
-    setTimeout(function() { renderCalendar(); }, 100);
-  });
-}
-
-// RENDER CALENDAR
-function renderCalendar() {
-  var cs = window._calState;
-  if (!cs) return;
-  var y = cs.y, mo = cs.mo, total = cs.totalDays, firstDow = cs.firstDow;
-  var key = y + '-' + (mo + 1);
-  var notSubmitted = MEMBERS.filter(function(m) {
-    return !state.submissions.some(function(s) { return s.key === key && s.member === m; });
-  });
-  var alertHtml = notSubmitted.length
-    ? '<div class="alert alert-warn"><span>⚠️</span><div>尚未登錄：<b>' + notSubmitted.join('、') + '</b></div></div>'
-    : '<div class="alert alert-info"><span>✅</span><div>所有成員已登錄。點擊人名可微調。</div></div>';
-  var counts = {};
-  MEMBERS.forEach(function(m) { counts[m] = 0; });
-  Object.keys(cs.assigned).forEach(function(d) {
-    var m = cs.assigned[d];
-    if (m && counts[m] !== undefined) counts[m]++;
-  });
-  var statsHtml = MEMBERS.map(function(m) {
-    return '<div class="cal-stat"><div class="cal-stat-avatar" style="background:' + MEMBER_BG[m] + '">' + MEMBER_SVG[m] + '</div>'
-      + '<div class="cal-stat-name">' + m + (m === cs.managerName ? ' 👑' : '') + '</div>'
-      + '<div class="cal-stat-count" style="color:' + MEMBER_COLORS[m] + '">' + counts[m] + '</div></div>';
+  var headerCells = DOW_TW.map(function(d) {
+    return '<th style="padding:8px 4px;background:#3d5c3d;color:#fff;font-size:12px;text-align:center;min-width:40px">' + d + '</th>';
   }).join('');
-  var legendHtml = '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(255,255,255,.6)"></div>週會</div>'
-    + MEMBERS.map(function(m) {
-      return '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:' + MEMBER_COLORS[m] + '"></div>' + m + '</div>';
-    }).join('');
 
-  var events = {};
-  function addEv(d, name, type) {
-    if (!events[d]) events[d] = [];
-    events[d].push({name: name, type: type});
+  var rows = '';
+  var rowCells = '';
+  for (var p = 0; p < firstDow; p++) rowCells += '<td style="background:#f5f5f5;border:1px solid #eee;min-width:40px;padding:6px"></td>';
+  for (var d = 1; d <= daysInMonth; d++) {
+    var dow = new Date(year, month, d).getDay();
+    var isWknd = dow === 0 || dow === 6;
+    var isWed = dow === 3;
+    var assigned = scheduleData ? scheduleData.assigned[String(d)] : null;
+    var bg = isWknd ? '#f5f5f5' : (isWed ? '#e8f5e9' : '#fff');
+    var inner = '<span style="font-size:11px;color:#999">' + d + '</span>';
+    if (!isWknd && isWed) inner += '<br><span style="font-size:9px;color:#1565c0">\u9031\u6703</span>';
+    if (!isWknd && !isWed && assigned) {
+      inner += '<br><span style="font-size:10px;font-weight:600;color:' + (COLORS[assigned]||'#333') + ';background:' + (BGS[assigned]||'#eee') + ';padding:1px 4px;border-radius:3px">' + assigned + '</span>';
+    }
+    rowCells += '<td style="padding:5px 3px;text-align:center;vertical-align:top;background:' + bg + ';border:1px solid #eee;min-width:40px">' + inner + '</td>';
+    if (dow === 6) { rows += '<tr>' + rowCells + '</tr>'; rowCells = ''; }
   }
-  cs.specials.forEach(function(e) { addEv(e.day, e.name, e.type); });
-  Object.keys(cs.assigned).forEach(function(d) {
-    if (cs.assigned[d]) addEv(Number(d), cs.assigned[d], cs.assigned[d]);
+  if (rowCells) rows += '<tr>' + rowCells + '</tr>';
+
+  var blockedRows = '';
+  Object.keys(blockedMap).forEach(function(m) {
+    if (blockedMap[m].length > 0) {
+      blockedRows += '<tr><td style="padding:5px 12px;font-weight:600">' + m + '</td>'
+        + '<td style="padding:5px 12px;color:#666">' + blockedMap[m].join('\u3001') + ' \u65e5\u4e0d\u53ef\u6392\u73ed</td></tr>';
+    }
   });
 
-  function dow(d) { return new Date(y, mo, d).getDay(); }
-  var cells = '';
-  for (var i = 0; i < firstDow; i++) cells += '<div class="cal-cell empty-cell"></div>';
-  for (var d = 1; d <= total; d++) {
-    var w = dow(d);
-    if (w === 0 || w === 6) { cells += '<div class="cal-cell weekend"></div>'; continue; }
-    var isHol = cs.holidayDays.has(d);
-    var cls = 'cal-cell';
-    if (isHol) cls += ' holiday-cell';
-    else if (w === 3) cls += ' wed-cell';
-    else if (w === 1 || w === 5) cls += ' wfh-cell';
-    var evHtml = (events[d] || []).map(function(ev) {
-      var isStaff = MEMBERS.indexOf(ev.type) >= 0;
-      var onclick = isStaff ? ' onclick="openEditPopup(' + d + ',\'' + ev.type + '\')"' : '';
-      return '<div class="cal-ev ev-' + ev.type + '"' + onclick + '>' + ev.name + (isStaff ? ' ✎' : '') + '</div>';
-    }).join('');
-    cells += '<div class="' + cls + '"><span class="cal-day-num">' + d + '</span>' + evHtml + '</div>';
-  }
-  var rem = (firstDow + total) % 7;
-  if (rem !== 0) for (var j = 0; j < 7 - rem; j++) cells += '<div class="cal-cell empty-cell"></div>';
+  var notice = scheduleData ? '' : '<div style="background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:13px;color:#e65100">\u26a0\ufe0f \u672c\u6708\u73ed\u8868\u5c1a\u672a\u7522\u751f\uff0c\u8acb\u524d\u5f80\u7cfb\u7d71\u78ba\u8a8d\u3002</div>';
 
-  document.getElementById('calendar-output').innerHTML = alertHtml
-    + '<div class="cal-wrap">'
-    + '<div class="cal-top"><div class="cal-month-title">' + y + ' 年 ' + MONTHS[mo] + '</div><div class="cal-legend">' + legendHtml + '</div></div>'
-    + '<div class="cal-stats-wrap"><div class="cal-stats">' + statsHtml + '</div></div>'
-    + '<div class="cal-grid-wrap"><div class="cal-grid-hdr"><div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div></div>'
-    + '<div class="cal-grid">' + cells + '</div></div>'
-    + '<div class="cal-footer-bar"><span>週三 Weekly Meeting · 週一五可居家辦公</span><span>' + cs.managerName + ' 主管 ' + cs.managerDays + ' 天</span></div>'
-    + '</div>';
-}
+  var html = '<div style="font-family:Segoe UI,sans-serif;max-width:680px;margin:0 auto">'
+    + '<div style="background:linear-gradient(135deg,#3d5c3d,#5a7a5a);padding:24px 28px;border-radius:12px 12px 0 0">'
+    + '<div style="font-size:22px;font-weight:700;color:#fff">' + monthLabel + ' \u5024\u73ed\u73ed\u8868</div>'
+    + '<div style="font-size:13px;color:rgba(255,255,255,.8);margin-top:4px">\u516b\u5fb7\u5be6\u9a57\u5ba4\u5024\u73ed\u73ed\u8868 \u2014 \u81ea\u52d5\u767c\u9001</div>'
+    + '</div>'
+    + '<div style="padding:24px 28px;background:#fff;border:1px solid #dde5dd;border-top:none;border-radius:0 0 12px 12px">'
+    + '<p style="font-size:14px;color:#333;margin-bottom:20px">\u5404\u4f4d\u597d\uff0c\u4ee5\u4e0b\u662f <b>' + monthLabel + '</b> \u7684\u5024\u73ed\u73ed\u8868\uff1a</p>'
+    + notice
+    + '<table style="border-collapse:collapse;width:100%;margin-bottom:24px"><thead><tr>' + headerCells + '</tr></thead><tbody>' + rows + '</tbody></table>'
+    + (blockedRows ? '<div style="margin-bottom:20px"><div style="font-size:13px;font-weight:600;color:#3d5c3d;margin-bottom:8px">\u672c\u6708\u8acb\u5047\uff0f\u4e0d\u53ef\u6392\u73ed\uff1a</div><table style="border-collapse:collapse;width:100%"><tbody>' + blockedRows + '</tbody></table></div>' : '')
+    + '<div style="background:#f5f5f5;padding:12px 16px;border-radius:8px;font-size:12px;color:#666">'
+    + '\u5982\u9700\u67e5\u770b\u6216\u66f4\u65b0\uff1a<a href="' + SITE_URL + '" style="color:#3d5c3d">' + SITE_URL + '</a>'
+    + '</div></div></div>';
 
-// EDIT POPUP
-function openEditPopup(day, currentMember) {
-  document.getElementById('popup-title').textContent = day + ' 日 — 選擇值班人員';
-  var membersDiv = document.getElementById('popup-members');
-  membersDiv.innerHTML = '';
-  var noneBtn = document.createElement('button');
-  noneBtn.style.cssText = 'display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;border:1.5px solid var(--border);background:var(--cream);cursor:pointer;font-size:13px;grid-column:span 2;color:var(--red);font-family:"Plus Jakarta Sans",sans-serif;';
-  noneBtn.innerHTML = '<span>—</span> 不排班（清除）';
-  noneBtn.onclick = function() { applyEdit(day, null); };
-  membersDiv.appendChild(noneBtn);
-  MEMBERS.forEach(function(m) {
-    var isActive = m === currentMember;
-    var btn = document.createElement('button');
-    btn.style.cssText = 'display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:13px;font-family:"Plus Jakarta Sans",sans-serif;'
-      + 'border:1.5px solid ' + (isActive ? MEMBER_COLORS[m] : 'var(--border)') + ';'
-      + 'background:' + (isActive ? MEMBER_BG[m] : 'var(--cream)') + ';'
-      + 'color:' + (isActive ? MEMBER_COLORS[m] : 'var(--ink)') + ';'
-      + 'font-weight:' + (isActive ? '600' : '400') + ';';
-    var avt = document.createElement('div');
-    avt.style.cssText = 'width:26px;height:26px;border-radius:50%;background:' + MEMBER_BG[m] + ';display:flex;align-items:center;justify-content:center;overflow:hidden;';
-    avt.innerHTML = MEMBER_SVG[m];
-    btn.appendChild(avt);
-    btn.appendChild(document.createTextNode(m + (isActive ? ' ✓' : '')));
-    (function(member) { btn.onclick = function() { applyEdit(day, member); }; })(m);
-    membersDiv.appendChild(btn);
+  var to = Object.values(MEMBERS_EMAIL).join(',');
+  GmailApp.sendEmail(to, '\u300a\u516b\u5fb7\u5be6\u9a57\u5ba4\u300b' + monthLabel + ' \u5024\u73ed\u73ed\u8868', '', {
+    htmlBody: html,
+    cc: CC_EMAIL,
+    name: '\u516b\u5fb7\u5be6\u9a57\u5ba4\u5024\u73ed\u73ed\u8868'
   });
-  var wrap = document.getElementById('edit-modal-wrap');
-  wrap.style.display = 'block';
-  wrap.scrollIntoView({behavior: 'smooth', block: 'nearest'});
-}
-function applyEdit(day, newMember) {
-  var cs = window._calState;
-  if (!cs) return;
-  if (newMember) cs.assigned[day] = newMember; else delete cs.assigned[day];
-  saveScheduleToSheets(cs);
-  renderCalendar();
-  closeEditPopup();
-  toast(newMember ? '✓ ' + day + ' 日 已改為 ' + newMember : '✓ ' + day + ' 日 已清除');
-}
-function closeEditPopup() {
-  var w = document.getElementById('edit-modal-wrap');
-  if (w) w.style.display = 'none';
+  Logger.log('Email sent for ' + monthLabel);
 }
 
-// CLEAR ALL
-function clearAllData() {
-  if (!confirm('確定要清除所有本機資料嗎？')) return;
-  state = {submissions: [], specialEvents: {}};
-  localStorage.clear();
-  window._calState = null;
-  renderSubmittedList();
-  renderSpecialEvents();
-  document.getElementById('calendar-output').innerHTML = '<div style="text-align:center;padding:4rem 2rem;color:var(--ink-light);"><div style="font-size:48px;margin-bottom:1rem;">📋</div><div style="font-size:15px;font-weight:500;margin-bottom:8px;color:var(--ink-mid)">班表尚未產生</div><div style="font-size:13px;margin-bottom:1.5rem">請先前往管理員頁面</div></div>';
-  toast('已清除全部資料');
+function setupMonthlyTrigger() {
+  ScriptApp.getProjectTriggers().forEach(function(t) {
+    if (t.getHandlerFunction() === 'sendMonthlyScheduleEmail') ScriptApp.deleteTrigger(t);
+  });
+  ScriptApp.newTrigger('sendMonthlyScheduleEmail')
+    .timeBased().onMonthDay(28).atHour(9).create();
+  Logger.log('Trigger set: day 28 at 9am');
 }
 
-init();
-</script>
-</body>
-</html>
+// ── 每月 20 號寄提醒填寫信 ────────────────────────────────────────
+function sendReminderEmail() {
+  var now = new Date();
+  var nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  var year = nextMonth.getFullYear();
+  var month = nextMonth.getMonth();
+  var monthLabel = year + ' \u5e74 ' + MONTHS_TW[month];
+
+  var html = '<div style="font-family:Segoe UI,sans-serif;max-width:680px;margin:0 auto">'
+    + '<div style="background:linear-gradient(135deg,#3d5c3d,#5a7a5a);padding:24px 28px;border-radius:12px 12px 0 0">'
+    + '<div style="font-size:22px;font-weight:700;color:#fff">' + monthLabel + ' \u5024\u73ed\u767b\u9304\u63d0\u9192</div>'
+    + '<div style="font-size:13px;color:rgba(255,255,255,.8);margin-top:4px">\u516b\u5fb7\u5be6\u9a57\u5ba4\u5024\u73ed\u73ed\u8868 \u2014 \u81ea\u52d5\u767c\u9001</div>'
+    + '</div>'
+    + '<div style="padding:24px 28px;background:#fff;border:1px solid #dde5dd;border-top:none;border-radius:0 0 12px 12px">'
+    + '<p style="font-size:14px;color:#333;line-height:1.8;margin-bottom:20px">'
+    + '\u5404\u4f4d\u597d\uff0c<br><br>'
+    + '<b>' + monthLabel + '</b> \u5373\u5c07\u5230\u4f86\uff0c\u8acb\u5927\u5bb6\u5728 <b>28 \u865f\u524d</b>\u767b\u5165\u4ee5\u4e0b\u7cfb\u7d71\uff0c\u586b\u5beb\u4e0b\u500b\u6708\u7684\u4e0d\u53ef\u6392\u73ed\u65e5\u671f\uff1a'
+    + '</p>'
+    + '<div style="text-align:center;margin-bottom:24px">'
+    + '<a href="' + SITE_URL + '" style="display:inline-block;padding:14px 32px;background:#3d5c3d;color:#fff;text-decoration:none;border-radius:10px;font-size:15px;font-weight:600">'
+    + '\u524d\u5f80\u767b\u9304 \u2192</a>'
+    + '</div>'
+    + '<div style="background:#f5f5f5;padding:12px 16px;border-radius:8px;font-size:12px;color:#666">'
+    + '\u8acb\u65bc <b>28 \u865f</b>\u524d\u5b8c\u6210\u767b\u9304\uff0c\u5e2b\u5450\u5c07\u65bc 28 \u865f\u767c\u9001\u6b63\u5f0f\u73ed\u8868\u3002<br>'
+    + SITE_URL
+    + '</div>'
+    + '</div></div>';
+
+  var to = Object.values(MEMBERS_EMAIL).join(',');
+  GmailApp.sendEmail(to, '\u300a\u516b\u5fb7\u5be6\u9a57\u5ba4\u300b' + monthLabel + ' \u5024\u73ed\u767b\u9304\u63d0\u9192', '', {
+    htmlBody: html,
+    cc: CC_EMAIL,
+    name: '\u516b\u5fb7\u5be6\u9a57\u5ba4\u5024\u73ed\u73ed\u8868'
+  });
+  Logger.log('Reminder email sent for ' + monthLabel);
+}
+
+// ── 設定每月 20 號提醒觸發器 ──────────────────────────────────────
+function setupReminderTrigger() {
+  ScriptApp.getProjectTriggers().forEach(function(t) {
+    if (t.getHandlerFunction() === 'sendReminderEmail') ScriptApp.deleteTrigger(t);
+  });
+  ScriptApp.newTrigger('sendReminderEmail')
+    .timeBased().onMonthDay(20).atHour(9).create();
+  Logger.log('Reminder trigger set: day 20 at 9am');
+}
