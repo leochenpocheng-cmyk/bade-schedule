@@ -594,21 +594,37 @@ function renderSpecialEvents(){
     for(let d=1;d<=daysInMonth(y,mo);d++)if(getDow(y,mo,d)===3)state.specialEvents[key].push({day:d,name:'Weekly Meeting',type:'weekly'});
     changed=true;
   }
-  // TW holidays are stored internally for calendar rendering but NOT shown in the list
   if(changed)saveSpecialEvents();
-  const list=document.getElementById('special-list');list.innerHTML='';
-  // Only show weekly meetings and custom training events (no holidays)
-  state.specialEvents[key].forEach((ev,i)=>{
-    if(ev.type==='holiday') return; // skip holidays - handled automatically
-    const row=document.createElement('div');row.className='special-item';
-    row.innerHTML='<input type="number" value="'+ev.day+'" min="1" max="31" onchange="updateSpecial(''+key+'','+i+','day',this.value)">'
-      +'<span style="font-size:12px;color:var(--ink-light)">日</span>'
-      +'<input type="text" value="'+ev.name+'" placeholder="事項名稱" onchange="updateSpecial(''+key+'','+i+','name',this.value)">'
-      +'<select onchange="updateSpecial(''+key+'','+i+','type',this.value)">'
-      +'<option value="weekly" '+(ev.type==='weekly'?'selected':'')+'>📅 週會</option>'
-      +'<option value="training" '+(ev.type==='training'?'selected':'')+'>📚 訓練</option>'
-      +'</select>'
-      +'<span class="del" onclick="removeSpecial(''+key+'','+i+')">×</span>';
+  const list=document.getElementById('special-list');
+  list.innerHTML='';
+  state.specialEvents[key].forEach(function(ev,i){
+    if(ev.type==='holiday') return;
+    const row=document.createElement('div');
+    row.className='special-item';
+    const dayInput=document.createElement('input');
+    dayInput.type='number'; dayInput.value=ev.day; dayInput.min=1; dayInput.max=31;
+    dayInput.style.width='46px';dayInput.style.border='1px solid #dde5dd';dayInput.style.borderRadius='6px';dayInput.style.padding='5px 7px';dayInput.style.fontSize='13px';dayInput.style.textAlign='center';
+    dayInput.onchange=function(){updateSpecial(key,i,'day',this.value);};
+    const dayLabel=document.createElement('span');
+    dayLabel.textContent='日';dayLabel.style.cssText='font-size:12px;color:#8a9688';
+    const nameInput=document.createElement('input');
+    nameInput.type='text'; nameInput.value=ev.name; nameInput.placeholder='事項名稱';
+    nameInput.style.cssText='flex:1;border:none;background:transparent;font-size:13px;font-family:"Plus Jakarta Sans",sans-serif;outline:none;';
+    nameInput.onchange=function(){updateSpecial(key,i,'name',this.value);};
+    const typeSelect=document.createElement('select');
+    typeSelect.style.cssText='font-size:11px;border:1px solid #dde5dd;border-radius:6px;padding:4px 8px;font-family:"Plus Jakarta Sans",sans-serif;background:#fff;';
+    [['weekly','📅 週會'],['training','📚 訓練']].forEach(function(opt){
+      const o=document.createElement('option');
+      o.value=opt[0]; o.textContent=opt[1];
+      if(ev.type===opt[0]) o.selected=true;
+      typeSelect.appendChild(o);
+    });
+    typeSelect.onchange=function(){updateSpecial(key,i,'type',this.value);};
+    const delBtn=document.createElement('span');
+    delBtn.textContent='×'; delBtn.className='del';
+    delBtn.onclick=function(){removeSpecial(key,i);};
+    row.appendChild(dayInput); row.appendChild(dayLabel); row.appendChild(nameInput);
+    row.appendChild(typeSelect); row.appendChild(delBtn);
     list.appendChild(row);
   });
 function addSpecialEvent(){const[y,mo]=parseMonthVal(document.getElementById('admin-month').value);const key=y+'-'+(mo+1);if(!state.specialEvents[key])state.specialEvents[key]=[];state.specialEvents[key].push({day:1,name:'',type:'holiday'});saveSpecialEvents();renderSpecialEvents();}
